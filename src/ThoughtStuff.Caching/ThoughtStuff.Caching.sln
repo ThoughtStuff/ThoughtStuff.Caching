@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThoughtStuff.Caching", "ThoughtStuff.Caching\ThoughtStuff.Caching.csproj", "{EFB031B3-6A09-46D1-9353-06169501D3D3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EFB031B3-6A09-46D1-9353-06169501D3D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFB031B3-6A09-46D1-9353-06169501D3D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFB031B3-6A09-46D1-9353-06169501D3D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFB031B3-6A09-46D1-9353-06169501D3D3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {846A1430-A160-4227-9168-155201832505}
+	EndGlobalSection
+EndGlobal
