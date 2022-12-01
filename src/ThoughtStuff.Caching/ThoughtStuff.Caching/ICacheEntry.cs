@@ -4,11 +4,10 @@
 using Microsoft.Extensions.Caching.Distributed;
 using System;
 
-namespace ThoughtStuff.Caching
+namespace ThoughtStuff.Caching;
+
+public interface ICacheEntry
 {
-    public interface ICacheEntry
-    {
-        DateTimeOffset Updated { get; }
-        DistributedCacheEntryOptions Options { get; }
-    }
+    DateTimeOffset Updated { get; }
+    DistributedCacheEntryOptions Options { get; }
 }

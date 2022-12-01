@@ -6,38 +6,37 @@ using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Linq;
 
-namespace ThoughtStuff.Caching
+namespace ThoughtStuff.Caching;
+
+class MethodInvocationMatcher
 {
-    class MethodInvocationMatcher
+    public MethodInvocation MethodInvocation { get; }
+    public DistributedCacheEntryOptions CacheOptions { get; }
+
+    public MethodInvocationMatcher(MethodInvocation methodInvocation, DistributedCacheEntryOptions cacheOptions)
     {
-        public MethodInvocation MethodInvocation { get; }
-        public DistributedCacheEntryOptions CacheOptions { get; }
+        MethodInvocation = methodInvocation ?? throw new ArgumentNullException(nameof(methodInvocation));
+        CacheOptions = cacheOptions ?? throw new ArgumentNullException(nameof(cacheOptions));
+    }
 
-        public MethodInvocationMatcher(MethodInvocation methodInvocation, DistributedCacheEntryOptions cacheOptions)
+    public bool Matches(IInvocation invocation)
+    {
+        if (invocation.Method != MethodInvocation.MethodInfo)
+            return false;
+        var parameterNames = invocation.Method.GetParameters().Select(p => p.Name).ToArray();
+        var arguments = MethodInvocation.Arguments;
+        if (!parameterNames.SequenceEqual(arguments.Keys))
+            return false;
+        for (int i = 0; i < invocation.Arguments.Length; i++)
         {
-            MethodInvocation = methodInvocation ?? throw new ArgumentNullException(nameof(methodInvocation));
-            CacheOptions = cacheOptions ?? throw new ArgumentNullException(nameof(cacheOptions));
-        }
-
-        public bool Matches(IInvocation invocation)
-        {
-            if (invocation.Method != MethodInvocation.MethodInfo)
+            var parameterName = parameterNames[i];
+            var expectedValue = arguments[parameterName];
+            if (expectedValue.Equals(AnyArgument.Placeholder))
+                continue;
+            var argumentValue = invocation.Arguments[i];
+            if (!expectedValue.Equals(argumentValue))
                 return false;
-            var parameterNames = invocation.Method.GetParameters().Select(p => p.Name).ToArray();
-            var arguments = MethodInvocation.Arguments;
-            if (!parameterNames.SequenceEqual(arguments.Keys))
-                return false;
-            for (int i = 0; i < invocation.Arguments.Length; i++)
-            {
-                var parameterName = parameterNames[i];
-                var expectedValue = arguments[parameterName];
-                if (expectedValue.Equals(AnyArgument.Placeholder))
-                    continue;
-                var argumentValue = invocation.Arguments[i];
-                if (!expectedValue.Equals(argumentValue))
-                    return false;
-            }
-            return true;
         }
+        return true;
     }
 }

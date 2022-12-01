@@ -4,19 +4,18 @@
 using Microsoft.Extensions.Caching.Distributed;
 using System;
 
-namespace ThoughtStuff.Caching
+namespace ThoughtStuff.Caching;
+
+public interface ICacheExpirationService
 {
-    public interface ICacheExpirationService
-    {
-        /// <summary>
-        /// Returns true if the cache entry is expired
-        /// given that cache entry was last updated at <paramref name="updatedTime"/>
-        /// and the cache entry has options of <paramref name="cacheEntryOptions"/>.
-        /// <para/>
-        /// Passing `null` or uninitialized <paramref name="cacheEntryOptions"/>
-        /// will cause a default cache policy to be used.
-        /// See <seealso cref="IDefaultCachePolicyService"/>.
-        /// </summary>
-        bool IsExpired(DistributedCacheEntryOptions cacheEntryOptions, DateTimeOffset updatedTime);
-    }
+    /// <summary>
+    /// Returns true if the cache entry is expired
+    /// given that cache entry was last updated at <paramref name="updatedTime"/>
+    /// and the cache entry has options of <paramref name="cacheEntryOptions"/>.
+    /// <para/>
+    /// Passing `null` or uninitialized <paramref name="cacheEntryOptions"/>
+    /// will cause a default cache policy to be used.
+    /// See <seealso cref="IDefaultCachePolicyService"/>.
+    /// </summary>
+    bool IsExpired(DistributedCacheEntryOptions cacheEntryOptions, DateTimeOffset updatedTime);
 }

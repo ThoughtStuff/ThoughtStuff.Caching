@@ -6,48 +6,47 @@ using Newtonsoft.Json;
 using System;
 using static ThoughtStuff.Caching.CachingInternal;
 
-namespace ThoughtStuff.Caching
+namespace ThoughtStuff.Caching;
+
+/// <summary>
+/// Wraps a <see cref="ITextCache"/> and uses JSON to serialize objects into and out of the <see cref="ITextCache"/>.
+/// </summary>
+public class JsonCache : ITypedCache
 {
-    /// <summary>
-    /// Wraps a <see cref="ITextCache"/> and uses JSON to serialize objects into and out of the <see cref="ITextCache"/>.
-    /// </summary>
-    public class JsonCache : ITypedCache
+    private readonly ITextCache textCache;
+
+    public JsonCache(ITextCache textCache)
     {
-        private readonly ITextCache textCache;
+        this.textCache = textCache ?? throw new ArgumentNullException(nameof(textCache));
+    }
 
-        public JsonCache(ITextCache textCache)
+    private JsonSerializerSettings JsonSerializerSettings =>
+        new JsonSerializerSettings
         {
-            this.textCache = textCache ?? throw new ArgumentNullException(nameof(textCache));
-        }
+            // `FilingData` requires preserving references for matching periods
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects
+        };
 
-        private JsonSerializerSettings JsonSerializerSettings =>
-            new JsonSerializerSettings
-            {
-                // `FilingData` requires preserving references for matching periods
-                PreserveReferencesHandling = PreserveReferencesHandling.Objects
-            };
+    /// <inheritdoc/>
+    public bool Contains(string key) => textCache.Contains(key);
 
-        /// <inheritdoc/>
-        public bool Contains(string key) => textCache.Contains(key);
+    /// <inheritdoc/>
+    public string GetLocation(string key) => textCache.GetLocation(key);
 
-        /// <inheritdoc/>
-        public string GetLocation(string key) => textCache.GetLocation(key);
+    /// <inheritdoc/>
+    public T Get<T>(string key)
+    {
+        var json = textCache.GetString(key);
+        if (json is null)
+            return default;
+        return JsonConvert.DeserializeObject<T>(json, JsonSerializerSettings);
+    }
 
-        /// <inheritdoc/>
-        public T Get<T>(string key)
-        {
-            var json = textCache.GetString(key);
-            if (json is null)
-                return default;
-            return JsonConvert.DeserializeObject<T>(json, JsonSerializerSettings);
-        }
-
-        /// <inheritdoc/>
-        public void Set<T>(string key, T value, DistributedCacheEntryOptions options)
-        {
-            ProhibitDefaultValue(key, value);
-            var json = JsonConvert.SerializeObject(value, JsonSerializerSettings);
-            textCache.SetString(key, json, options);
-        }
+    /// <inheritdoc/>
+    public void Set<T>(string key, T value, DistributedCacheEntryOptions options)
+    {
+        ProhibitDefaultValue(key, value);
+        var json = JsonConvert.SerializeObject(value, JsonSerializerSettings);
+        textCache.SetString(key, json, options);
     }
 }

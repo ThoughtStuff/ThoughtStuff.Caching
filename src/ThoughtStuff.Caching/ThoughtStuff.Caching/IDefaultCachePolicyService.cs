@@ -3,10 +3,9 @@
 
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace ThoughtStuff.Caching
+namespace ThoughtStuff.Caching;
+
+public interface IDefaultCachePolicyService
 {
-    public interface IDefaultCachePolicyService
-    {
-        DistributedCacheEntryOptions GetDefaultCacheEntryOptions();
-    }
+    DistributedCacheEntryOptions GetDefaultCacheEntryOptions();
 }

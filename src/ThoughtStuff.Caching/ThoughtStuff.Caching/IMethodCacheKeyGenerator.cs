@@ -3,10 +3,9 @@
 
 using System.Reflection;
 
-namespace ThoughtStuff.Caching
+namespace ThoughtStuff.Caching;
+
+public interface IMethodCacheKeyGenerator
 {
-    public interface IMethodCacheKeyGenerator
-    {
-        string GetCacheKey(MethodInfo methodInfo, object[] arguments);
-    }
+    string GetCacheKey(MethodInfo methodInfo, object[] arguments);
 }

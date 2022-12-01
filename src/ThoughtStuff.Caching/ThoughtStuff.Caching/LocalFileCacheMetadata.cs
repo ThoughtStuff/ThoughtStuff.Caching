@@ -3,10 +3,9 @@
 
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace ThoughtStuff.Caching
+namespace ThoughtStuff.Caching;
+
+internal class LocalFileCacheMetadata
 {
-    internal class LocalFileCacheMetadata
-    {
-        public DistributedCacheEntryOptions CacheEntryOptions { get; set; }
-    }
+    public DistributedCacheEntryOptions CacheEntryOptions { get; set; }
 }

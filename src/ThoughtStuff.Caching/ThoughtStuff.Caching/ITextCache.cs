@@ -3,22 +3,21 @@
 
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace ThoughtStuff.Caching
+namespace ThoughtStuff.Caching;
+
+/// <summary>
+/// Cache for storing plain text values.
+/// </summary>
+public interface ITextCache : ICacheBase
 {
     /// <summary>
-    /// Cache for storing plain text values.
+    /// Return the cached string value if present and not expired.
+    /// Returns null otherwise.
     /// </summary>
-    public interface ITextCache : ICacheBase
-    {
-        /// <summary>
-        /// Return the cached string value if present and not expired.
-        /// Returns null otherwise.
-        /// </summary>
-        string GetString(string key);
+    string GetString(string key);
 
-        /// <summary>
-        /// Set the string value in the cache using the given <see cref="DistributedCacheEntryOptions"/>
-        /// </summary>
-        void SetString(string key, string value, DistributedCacheEntryOptions options);
-    }
+    /// <summary>
+    /// Set the string value in the cache using the given <see cref="DistributedCacheEntryOptions"/>
+    /// </summary>
+    void SetString(string key, string value, DistributedCacheEntryOptions options);
 }

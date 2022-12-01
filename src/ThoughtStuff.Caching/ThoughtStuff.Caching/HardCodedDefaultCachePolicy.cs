@@ -4,16 +4,15 @@
 using Microsoft.Extensions.Caching.Distributed;
 using System;
 
-namespace ThoughtStuff.Caching
+namespace ThoughtStuff.Caching;
+
+public class HardCodedDefaultCachePolicy : IDefaultCachePolicyService
 {
-    public class HardCodedDefaultCachePolicy : IDefaultCachePolicyService
+    public DistributedCacheEntryOptions GetDefaultCacheEntryOptions()
     {
-        public DistributedCacheEntryOptions GetDefaultCacheEntryOptions()
+        return new DistributedCacheEntryOptions
         {
-            return new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
-            };
-        }
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+        };
     }
 }
