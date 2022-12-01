@@ -1,13 +1,10 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
+using ThoughtStuff.Caching.Azure;
+
 namespace ThoughtStuff.Caching.Tests;
 
-public class UnitTest1
+public class AzureBlobTextCacheManagerTest : TextCacheManagerTestBase<AzureBlobTextCache>
 {
-    [Fact]
-    public void Test1()
-    {
-
-    }
 }

@@ -16,4 +16,10 @@
     <ProjectReference Include="..\ThoughtStuff.Caching\ThoughtStuff.Caching.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>ThoughtStuff.Caching.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>
