@@ -71,7 +71,7 @@ public class LocalFileCache : ITextCache, IManagedCache
         {
             if (candidate.IsNotEmpty())
             {
-                var baseDirectory = Path.Combine(candidate, "Unplugged.SecurityAnalysis", ".QuickCache");
+                var baseDirectory = Path.Combine(candidate, "ThoughtStuff", nameof(LocalFileCache));
                 return baseDirectory;
             }
         }
@@ -79,7 +79,7 @@ public class LocalFileCache : ITextCache, IManagedCache
     }
 
     // TODO: Handle simultaneous access
-    //       System.IO.IOException : The process cannot access the file 'C:\Users\JacobFoshee\Unplugged.SecurityAnalysis\.QuickCache\RequestDailyTimeSeriesAsync('AAPL',0,0).txt' because it is being used by another process.
+    //       System.IO.IOException : The process cannot access the file 'C:\Users\JacobFoshee\ThoughtStuff\LocalFileCache\...' because it is being used by another process.
     // TODO: Handle path length limitations
     //       https://stackoverflow.com/questions/3406494/what-is-the-maximum-amount-of-characters-or-length-for-a-directory
 

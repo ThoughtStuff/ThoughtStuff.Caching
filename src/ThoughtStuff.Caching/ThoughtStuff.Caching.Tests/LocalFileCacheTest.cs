@@ -61,10 +61,8 @@ public class LocalFileCacheTest
     //public void ShouldUseUserDirectory(LocalFileCache subject)
     //{
     //    subject.BaseDirectory.Should().BeOneOf(
-    //        @"C:\Users\JacobFoshee\Unplugged.SecurityAnalysis\.QuickCache",
-    //        @"C:\Users\jfoshee\Unplugged.SecurityAnalysis\.QuickCache",
-    //        "/Users/jfoshee/Unplugged.SecurityAnalysis/.QuickCache",
-    //        "/Users/jf/Unplugged.SecurityAnalysis/.QuickCache");
+    //        @"C:\Users\jfoshee\ThoughtStuff\LocalFileCache",
+    //        "/Users/jfoshee/ThoughtStuff/LocalFileCache");
     //}
 
     [Theory(DisplayName = "Caching: Location"), AutoMoq]
