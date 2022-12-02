@@ -9,7 +9,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThoughtStuff.Core", "Though
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThoughtStuff.Caching.Tests", "ThoughtStuff.Caching.Tests\ThoughtStuff.Caching.Tests.csproj", "{C5DB2F10-0D8F-4FC3-9123-A4D22CC786C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThoughtStuff.Caching.Azure", "ThoughtStuff.Caching.Azure\ThoughtStuff.Caching.Azure.csproj", "{7FF8BDF3-8DE9-416E-82FB-15220A504FEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThoughtStuff.Caching.Azure", "ThoughtStuff.Caching.Azure\ThoughtStuff.Caching.Azure.csproj", "{7FF8BDF3-8DE9-416E-82FB-15220A504FEC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_BuildSettings", "_BuildSettings", "{D655EFCF-27E4-49B5-872C-B6112AC59771}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
