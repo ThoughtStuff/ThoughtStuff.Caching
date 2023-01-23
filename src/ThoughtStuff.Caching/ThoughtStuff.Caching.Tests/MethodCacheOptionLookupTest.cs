@@ -12,7 +12,7 @@ public class MethodCacheOptionLookupTest
     [Theory(DisplayName = "Caching: Method Cache Options"), AutoMoq]
     public void ConfigureOptionsByType(MethodCacheOptionsLookup subject)
     {
-        var expectedA = default(TimeSpan?);
+        var expectedA = MethodCacheOptionsLookup.DefaultRelativeExpiration;
         var expectedB = TimeSpan.FromSeconds(42);
         var expectedC = TimeSpan.FromDays(13);
 
@@ -78,7 +78,7 @@ public class MethodCacheOptionLookupTest
         subject.GetRelativeExpiration<IInterfaceD>(x => x.GetValues(2007, "Th"))
             .Should().Be(expected);
         subject.GetRelativeExpiration<IInterfaceD>(x => x.GetValues(2007, null))
-            .Should().Be(null);
+            .Should().Be(MethodCacheOptionsLookup.DefaultRelativeExpiration);
     }
 
     [Theory(DisplayName = "Caching: Method Cache priority"), AutoMoq]

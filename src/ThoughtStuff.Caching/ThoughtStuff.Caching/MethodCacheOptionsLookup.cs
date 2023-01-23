@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Castle.DynamicProxy;
@@ -14,6 +14,7 @@ namespace ThoughtStuff.Caching;
 
 public class MethodCacheOptionsLookup : IMethodCacheOptionsLookup
 {
+    public static readonly TimeSpan DefaultRelativeExpiration = TimeSpan.FromHours(1);
     private readonly Dictionary<Type, DistributedCacheEntryOptions> defaultsByType = new();
     private readonly ConcurrentDictionary<Type, List<MethodInvocationMatcher>> matcherMap = new();
     private readonly ILogger<IMethodCacheOptionsLookup> logger;
@@ -45,8 +46,12 @@ public class MethodCacheOptionsLookup : IMethodCacheOptionsLookup
         var key = methodInfo.DeclaringType;
         if (defaultsByType.TryGetValue(key, out var cacheEntryOptions))
             return cacheEntryOptions;
-        logger.LogWarning($"Missing cache entry options configuration for {methodInfo.DeclaringType.Name} {methodInfo}.");
-        return new DistributedCacheEntryOptions();
+        logger.LogWarning($"Missing cache entry options configuration for {methodInfo.DeclaringType.Name} {methodInfo}. " +
+            $"Using a default relative expiration: '{DefaultRelativeExpiration}'.");
+        return new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = DefaultRelativeExpiration
+        };
     }
 
     /// <inheritdoc/>
