@@ -1,10 +1,16 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
+using ThoughtStuff.Caching.Example;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddMethodCaching();
+builder.Services.AddTransientWithCaching<ISlowExampleService, SlowExampleService, int>();
+//builder.Services.AddCachingWithAzureBlobs(builder.Configuration);
 
 var app = builder.Build();
 
