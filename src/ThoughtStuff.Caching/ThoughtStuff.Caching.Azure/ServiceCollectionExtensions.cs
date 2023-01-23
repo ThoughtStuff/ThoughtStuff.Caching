@@ -2,12 +2,13 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using System;
+using ThoughtStuff.Caching;
+using ThoughtStuff.Caching.Azure;
 
 // .NET Practice is to place ServiceCollectionExtensions in the following namespace
 // to improve discoverability of the extension method during service configuration
-namespace ThoughtStuff.Caching.Azure;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
