@@ -22,9 +22,8 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddMethodCaching(this IServiceCollection services)
     {
-        // Use `TryAdd` so as not to replace an ITextCache that was previously configured
-        services.TryAddTransient<ITextCache, MemoryCacheTextCache>();
-        services.AddTransient<ITypedCache, JsonCache>();
+        // Use `TryAdd` so as not to replace an ITypedCache that was previously configured
+        services.TryAddTransient<ITypedCache, MemoryCacheTypedCache>();
         services.AddTransient<IMethodCacheKeyGenerator, MethodCacheKeyGenerator>();
         // MethodCacheOptionsLookup must be added as singleton because the mappings are stored in member variables
         services.AddSingleton<IMethodCacheOptionsLookup, MethodCacheOptionsLookup>();

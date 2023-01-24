@@ -5,28 +5,28 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace ThoughtStuff.Caching.Tests;
 
-public class MemoryCacheTextCacheTest
+public class MemoryCacheTypedCacheTest
 {
     [Theory(DisplayName = "MemoryCache: Location Matches Key"), AutoMoq]
-    public void Location(MemoryCacheTextCache cache, string key)
+    public void Location(MemoryCacheTypedCache cache, string key)
     {
         cache.GetLocation(key).Should().Be(key);
     }
 
     [Fact(DisplayName = "MemoryCache: Basic usage")]
-    public void SetupMemoryCache()
+    public void MemoryCacheBasic()
     {
         var memCacheOptions = new MemoryCacheOptions();
         var memCache = new MemoryCache(memCacheOptions);
-        var subject = new MemoryCacheTextCache(memCache);
+        var subject = new MemoryCacheTypedCache(memCache);
         const string key = "test-key";
         const string value = "value 123";
         subject.Contains(key).Should().BeFalse();
-        subject.GetString(key).Should().BeNull();
+        subject.Get<string>(key).Should().BeNull();
 
-        subject.SetString(key, value);
+        subject.Set(key, value);
 
         subject.Contains(key).Should().BeTrue();
-        subject.GetString(key).Should().Be(value);
+        subject.Get<string>(key).Should().Be(value);
     }
 }

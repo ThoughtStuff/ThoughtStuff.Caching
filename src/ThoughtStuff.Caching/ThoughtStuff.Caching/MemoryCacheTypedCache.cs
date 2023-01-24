@@ -8,13 +8,13 @@ using System;
 namespace ThoughtStuff.Caching;
 
 /// <summary>
-/// <see cref="IMemoryCache"/> implementation of <see cref="ITextCache"/>
+/// <see cref="IMemoryCache"/> implementation of <see cref="ITypedCache"/>
 /// </summary>
-public class MemoryCacheTextCache : ITextCache
+public class MemoryCacheTypedCache : ITypedCache
 {
     private readonly IMemoryCache memoryCache;
 
-    public MemoryCacheTextCache(IMemoryCache memoryCache)
+    public MemoryCacheTypedCache(IMemoryCache memoryCache)
     {
         this.memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
     }
@@ -26,10 +26,10 @@ public class MemoryCacheTextCache : ITextCache
     public string GetLocation(string key) => key;
 
     /// <inheritdoc/>
-    public string GetString(string key) => memoryCache.Get<string>(key);
+    public T Get<T>(string key) => memoryCache.Get<T>(key);
 
     /// <inheritdoc/>
-    public void SetString(string key, string value, DistributedCacheEntryOptions options)
+    public void Set<T>(string key, T value, DistributedCacheEntryOptions options)
     {
         var memCacheOptions = new MemoryCacheEntryOptions
         {
