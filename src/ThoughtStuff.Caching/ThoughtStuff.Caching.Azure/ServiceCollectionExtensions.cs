@@ -12,6 +12,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
+    // TODO: Add docs and improve names e.g. AddMethodCachingWithAzureBlobs...
+
     public static IServiceCollection AddCachingWithAzureBlobs(this IServiceCollection services,
                                                               Action<AzureCachingOptions> configureAzureCachingOptions)
     {
@@ -28,9 +30,12 @@ public static class ServiceCollectionExtensions
 
     private static void AddCachingWithAzureBlobs(IServiceCollection services)
     {
+        //services.AddMethodCaching();
         services.AddTransient<IBlobStorageService, BlobStorageService>();
         services.AddTransient<IObjectDictionaryConverter, ObjectDictionaryConverter>();
         services.AddTransient<ITextCache, AzureBlobTextCache>();
         services.AddTransient<IZipArchiveBlobStorage, ZipArchiveBlobStorage>();
+        // BlobStorageService.CopyFromUrl requires HttpClientFactory
+        services.AddHttpClient();
     }
 }
