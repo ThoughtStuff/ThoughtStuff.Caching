@@ -2,6 +2,7 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Castle.DynamicProxy;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using ThoughtStuff.Caching;
 using ThoughtStuff.Core.Abstractions;
@@ -15,12 +16,14 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Adds Castle Dynamic Proxy based caching requirements.
     /// Required for using <see cref="AddTransientWithCaching{TService, TImplementation, TResult}(IServiceCollection)"/>
+    /// <para/>
+    /// By default the cache will use <see cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/>
+    /// unless another implementation of <see cref="ITextCache"/> is provided.
     /// </summary>
-    /// <param name="services"></param>
     public static IServiceCollection AddMethodCaching(this IServiceCollection services)
     {
-        services.AddTransient<IObjectFileSerializer, JsonFileSerializer>(); // IMPORTANT: If the serialization format is changed then the cache and any other persisted files will break
-        services.AddLocalFileTextCache();
+        // Use `TryAdd` so as not to replace an ITextCache that was previously configured
+        services.TryAddTransient<ITextCache, MemoryCacheTextCache>();
         services.AddTransient<ITypedCache, JsonCache>();
         services.AddTransient<IMethodCacheKeyGenerator, MethodCacheKeyGenerator>();
         // MethodCacheOptionsLookup must be added as singleton because the mappings are stored in member variables
@@ -49,6 +52,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ICacheExpirationService, CacheExpirationService>();
         services.AddTransient<IDefaultCachePolicyService, HardCodedDefaultCachePolicy>();
         services.AddTransient<ITextCache, LocalFileCache>();
+        // IMPORTANT: If the serialization format is changed then the cache and any other persisted files will break
+        services.AddTransient<IObjectFileSerializer, JsonFileSerializer>();
         services.Configure(configureLocalFileCacheOptions);
         return services;
     }
