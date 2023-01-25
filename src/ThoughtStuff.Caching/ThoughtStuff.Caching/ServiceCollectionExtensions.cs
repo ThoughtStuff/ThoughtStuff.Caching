@@ -33,31 +33,6 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Configures a <see cref="LocalFileCache"/> as <see cref="ITextCache"/>
-    /// using default options (attempting to automatically find a local user or appdata directory for the cache)
-    /// </summary>
-    public static IServiceCollection AddLocalFileTextCache(this IServiceCollection services)
-    {
-        return services.AddLocalFileTextCache(options =>
-            options.BaseDirectory = LocalFileCache.FindLocalCacheBaseDirectory());
-    }
-
-    /// <summary>
-    /// Configures a <see cref="LocalFileCache"/> as <see cref="ITextCache"/>
-    /// </summary>
-    public static IServiceCollection AddLocalFileTextCache(this IServiceCollection services,
-                                                           Action<LocalFileCacheOptions> configureLocalFileCacheOptions)
-    {
-        services.AddTransient<ICacheExpirationService, CacheExpirationService>();
-        services.AddTransient<IDefaultCachePolicyService, HardCodedDefaultCachePolicy>();
-        services.AddTransient<ITextCache, LocalFileCache>();
-        // IMPORTANT: If the serialization format is changed then the cache and any other persisted files will break
-        services.AddTransient<IObjectFileSerializer, JsonFileSerializer>();
-        services.Configure(configureLocalFileCacheOptions);
-        return services;
-    }
-
-    /// <summary>
     /// Adds a Transient Service of the type specified in <typeparamref name="TService"/>
     /// with the implementation specified in <typeparamref name="TImplementation"/>
     /// and uses a <see cref="IProxyGenerator"/> to inject a caching <see cref="IInterceptor"/>

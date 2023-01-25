@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using System;
 using static ThoughtStuff.Caching.CachingInternal;
 
-namespace ThoughtStuff.Caching;
+namespace ThoughtStuff.Caching.FileSystem;
 
 /// <summary>
 /// Wraps a <see cref="ITextCache"/> and uses JSON to serialize objects into and out of the <see cref="ITextCache"/>.

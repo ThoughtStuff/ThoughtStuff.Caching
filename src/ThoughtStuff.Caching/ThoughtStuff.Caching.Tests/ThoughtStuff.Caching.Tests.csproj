@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ThoughtStuff.Caching.Azure\ThoughtStuff.Caching.Azure.csproj" />
+    <ProjectReference Include="..\ThoughtStuff.Caching.FileSystem\ThoughtStuff.Caching.FileSystem.csproj" />
     <ProjectReference Include="..\ThoughtStuff.Caching\ThoughtStuff.Caching.csproj" />
   </ItemGroup>
 

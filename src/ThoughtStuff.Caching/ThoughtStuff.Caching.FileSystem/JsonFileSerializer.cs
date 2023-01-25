@@ -2,10 +2,9 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Newtonsoft.Json;
-using System.IO;
 using ThoughtStuff.Core.Abstractions;
 
-namespace ThoughtStuff.Caching;
+namespace ThoughtStuff.Caching.FileSystem;
 
 public class JsonFileSerializer : IObjectFileSerializer
 {

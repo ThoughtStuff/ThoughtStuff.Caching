@@ -14,5 +14,4 @@
 TODO: 
 
 - [ ] Document running Azurite for blob tests
-- [ ] Break dependence of main project on Newtonsoft
 - [ ] Enable Nullable references

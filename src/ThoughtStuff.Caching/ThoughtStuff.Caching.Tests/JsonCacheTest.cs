@@ -2,6 +2,7 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using AutoFixture.Xunit2;
+using ThoughtStuff.Caching.FileSystem;
 
 namespace ThoughtStuff.Caching.Tests;
 
