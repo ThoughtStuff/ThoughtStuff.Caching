@@ -14,7 +14,7 @@ using ThoughtStuff.Core.Abstractions;
 using static System.Environment;
 using static ThoughtStuff.Caching.CachingInternal;
 
-namespace ThoughtStuff.Caching;
+namespace ThoughtStuff.Caching.FileSystem;
 
 public class LocalFileCache : ITextCache, IManagedCache
 {

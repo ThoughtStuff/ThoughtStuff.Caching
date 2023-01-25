@@ -8,10 +8,15 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Polly" Version="7.2.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ThoughtStuff.Caching\ThoughtStuff.Caching.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ThoughtStuff.Caching.Tests"></InternalsVisibleTo>
   </ItemGroup>
 
 </Project>

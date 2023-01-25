@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace ThoughtStuff.Caching;
+namespace ThoughtStuff.Caching.FileSystem;
 
 internal class LocalFileCacheMetadata
 {

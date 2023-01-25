@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ThoughtStuff.Core;
 
-namespace ThoughtStuff.Caching;
+namespace ThoughtStuff.Caching.FileSystem;
 
 internal sealed class LocalFileCacheManager : ICacheManager
 {

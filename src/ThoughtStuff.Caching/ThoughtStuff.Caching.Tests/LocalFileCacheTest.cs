@@ -4,6 +4,7 @@
 using AutoFixture.Xunit2;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using ThoughtStuff.Caching.FileSystem;
 using ThoughtStuff.Core.Abstractions;
 using static ThoughtStuff.Core.FileSystemUtilities;
 
