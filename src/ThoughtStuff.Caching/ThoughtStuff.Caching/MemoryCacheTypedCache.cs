@@ -10,7 +10,7 @@ namespace ThoughtStuff.Caching;
 /// <summary>
 /// <see cref="IMemoryCache"/> implementation of <see cref="ITypedCache"/>
 /// </summary>
-public class MemoryCacheTypedCache : ITypedCache
+public class MemoryCacheTypedCache : ITypedCache, IManagedCache
 {
     private readonly IMemoryCache memoryCache;
 
@@ -38,5 +38,11 @@ public class MemoryCacheTypedCache : ITypedCache
             SlidingExpiration = options.SlidingExpiration
         };
         memoryCache.Set(key, value, memCacheOptions);
+    }
+
+    /// <inheritdoc/>
+    public ICacheManager GetCacheManager()
+    {
+        return new MemoryCacheManager(memoryCache);
     }
 }
