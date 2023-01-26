@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using System.Text.RegularExpressions;
@@ -23,11 +23,5 @@ public static class StringUtilities
             .Replace(@"\*", ".*")
             .Replace(@"\?", ".");
         return new Regex($"^{expression}$");
-    }
-
-    public static string JoinNonEmpty(string separator, params string[] source)
-    {
-        var nonEmpty = source.Where(s => s.IsNotEmpty());
-        return string.Join(separator, nonEmpty);
     }
 }
