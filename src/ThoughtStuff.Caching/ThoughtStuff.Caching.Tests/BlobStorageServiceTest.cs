@@ -6,7 +6,7 @@ using Azure;
 using Azure.Storage.Blobs.Models;
 using System.Net;
 using ThoughtStuff.Caching.Azure;
-using ThoughtStuff.Core;
+using ThoughtStuff.Caching.Core;
 
 namespace ThoughtStuff.Caching.Tests;
 

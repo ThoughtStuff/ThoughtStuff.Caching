@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
-using ThoughtStuff.Core;
+using ThoughtStuff.Caching.Core;
 
 namespace ThoughtStuff.Caching.Azure;
 

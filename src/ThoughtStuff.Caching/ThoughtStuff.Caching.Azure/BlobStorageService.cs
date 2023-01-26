@@ -8,9 +8,9 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
-using ThoughtStuff.Core;
 using System.Collections.Generic;
 using System.Net.Http;
+using ThoughtStuff.Caching.Core;
 
 namespace ThoughtStuff.Caching.Azure;
 

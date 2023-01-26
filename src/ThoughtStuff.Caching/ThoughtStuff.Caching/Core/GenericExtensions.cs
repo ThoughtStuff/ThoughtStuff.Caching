@@ -3,7 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace ThoughtStuff.Core;
+namespace ThoughtStuff.Caching.Core;
 
 public static class GenericExtensions
 {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
-using ThoughtStuff.Core;
+using ThoughtStuff.Caching.Core;
 using static System.Environment;
 using static ThoughtStuff.Caching.CachingInternal;
 

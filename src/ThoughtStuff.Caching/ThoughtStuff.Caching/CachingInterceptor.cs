@@ -2,7 +2,7 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Castle.DynamicProxy;
-using ThoughtStuff.Core;
+using ThoughtStuff.Caching.Core;
 
 namespace ThoughtStuff.Caching;
 

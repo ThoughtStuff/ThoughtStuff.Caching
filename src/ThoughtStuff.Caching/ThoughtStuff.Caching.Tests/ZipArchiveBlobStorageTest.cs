@@ -4,7 +4,6 @@
 using AutoFixture.Xunit2;
 using System.IO.Compression;
 using ThoughtStuff.Caching.Azure;
-using ThoughtStuff.Core;
 
 namespace ThoughtStuff.Caching.Tests;
 

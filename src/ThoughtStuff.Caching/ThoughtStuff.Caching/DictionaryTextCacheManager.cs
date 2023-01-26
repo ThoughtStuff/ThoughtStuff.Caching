@@ -1,7 +1,7 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using static ThoughtStuff.Core.StringUtilities;
+using static ThoughtStuff.Caching.Core.StringUtilities;
 
 namespace ThoughtStuff.Caching;
 
