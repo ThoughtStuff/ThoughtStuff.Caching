@@ -9,7 +9,7 @@ public class ObjectDictionaryConverterTest
 {
     public class ExampleItem
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public int Age { get; set; }
         public DateTimeOffset? Date { get; set; }
         public TimeSpan? TimeSpan { get; set; }

@@ -48,7 +48,7 @@ public class JsonCacheTest
     public void ThrowSettingDefault(JsonCache jsonCache, string key)
     {
         Action act = () =>
-            jsonCache.Set<ExampleDto>(key, null);
+            jsonCache.Set<ExampleDto>(key, null!);
         act.Should().Throw<ArgumentException>().WithMessage("*default*");
     }
 

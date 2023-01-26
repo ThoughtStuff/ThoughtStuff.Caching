@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using System.Reflection;
@@ -7,7 +7,7 @@ namespace ThoughtStuff.Caching;
 
 public class MethodCacheKeyGenerator : IMethodCacheKeyGenerator
 {
-    public string GetCacheKey(MethodInfo methodInfo, object[] arguments)
+    public string GetCacheKey(MethodInfo methodInfo, object?[] arguments)
     {
         var methodName = methodInfo.Name;
         var argStrings = new List<string>(arguments.Length);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 namespace ThoughtStuff.Caching.Tests;
@@ -7,7 +7,7 @@ public class MethodCacheKeyGeneratorTest
 {
     public class ExampleDto
     {
-        public string Key { get; set; }
+        public string? Key { get; set; }
 
         public override string ToString() => $"Key: '{Key}'";
     }
@@ -18,8 +18,8 @@ public class MethodCacheKeyGeneratorTest
     public void CacheKey()
     {
         var subject = new MethodCacheKeyGenerator();
-        var methodInfo = GetType().GetMethod(nameof(Example));
-        var arguments = new object[]
+        var methodInfo = GetType().GetMethod(nameof(Example))!;
+        var arguments = new object?[]
         {
             "xyz",
             new Uri("https://example.com/"),

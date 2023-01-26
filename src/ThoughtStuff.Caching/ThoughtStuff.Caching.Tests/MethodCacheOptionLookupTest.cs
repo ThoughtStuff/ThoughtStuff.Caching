@@ -30,7 +30,7 @@ public class MethodCacheOptionLookupTest
 
     interface IInterfaceD
     {
-        int GetValues(int year, string day);
+        int GetValues(int year, string? day);
     }
 
     [Theory(DisplayName = "Caching: Method Cache using Arguments"), AutoMoq]

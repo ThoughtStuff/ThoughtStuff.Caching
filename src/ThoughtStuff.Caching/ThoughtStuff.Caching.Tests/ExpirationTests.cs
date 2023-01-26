@@ -25,7 +25,7 @@ public class ExpirationTests
     [InlineAutoMoq("2020-11-14", 30, true)]
     [InlineAutoMoq("2020-11-30", 14, true)]
     [InlineAutoMoq("2020-11-30", 30, false)]
-    public void ExpirationOptions(string absolute,
+    public void ExpirationOptions(string? absolute,
                                   int? relativeDays,
                                   bool expected,
                                   CacheExpirationService cacheExpirationService)

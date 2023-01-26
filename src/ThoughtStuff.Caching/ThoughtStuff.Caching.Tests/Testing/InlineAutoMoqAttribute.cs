@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using AutoFixture.Xunit2;
@@ -11,7 +11,7 @@ namespace ThoughtStuff.Caching.Tests.Testing;
 /// </summary>
 public class InlineAutoMoqAttribute : CompositeDataAttribute
 {
-    public InlineAutoMoqAttribute(params object[] values)
+    public InlineAutoMoqAttribute(params object?[] values)
         : base(
               new InlineDataAttribute(values),
               new AutoMoqAttribute()

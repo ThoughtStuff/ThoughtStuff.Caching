@@ -70,7 +70,7 @@ public abstract class TextCacheTestBase<TCache> where TCache : ITextCache
     [Theory(DisplayName = "Text Cache: Set to Default prohibited"), CacheTest]
     public void SetDefault(TCache cache, string key)
     {
-        Action act = () => cache.SetString(key, default);
+        Action act = () => cache.SetString(key, default!);
         act.Should().Throw<ArgumentException>("Default values are not permitted*");
     }
 

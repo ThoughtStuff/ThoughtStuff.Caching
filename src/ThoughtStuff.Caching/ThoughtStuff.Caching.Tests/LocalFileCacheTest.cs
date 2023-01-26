@@ -93,7 +93,7 @@ public class LocalFileCacheTest
         string metaPath = Path.Combine(baseDirectory, "the-key.meta");
         File.Exists(metaPath).Should().BeTrue();
         var metaText = File.ReadAllText(metaPath);
-        var metadata = JsonConvert.DeserializeObject<LocalFileCacheMetadata>(metaText);
+        var metadata = JsonConvert.DeserializeObject<LocalFileCacheMetadata>(metaText)!;
         metadata.CacheEntryOptions.Should().BeEquivalentTo(options);
     }
 
