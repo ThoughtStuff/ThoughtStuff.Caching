@@ -10,7 +10,8 @@
 Injects look-through cache for configured services, for example:
 
 ```cs
-services.AddTransientWithCaching<ISlowExampleService, SlowExampleService, int>();
+services.AddMethodCaching()
+        .AddTransientWithCaching<IMySlowService, MySlowService, MyResult>();
 ```
 
 
