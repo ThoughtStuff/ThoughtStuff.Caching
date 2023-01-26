@@ -7,6 +7,11 @@
 
 &mdash; Fred P. Brooks
 
+Injects look-through cache for configured services, for example:
+
+```cs
+services.AddTransientWithCaching<ISlowExampleService, SlowExampleService, int>();
+```
 
 
 ---
