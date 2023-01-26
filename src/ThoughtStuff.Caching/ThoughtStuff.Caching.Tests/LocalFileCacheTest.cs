@@ -5,7 +5,7 @@ using AutoFixture.Xunit2;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using ThoughtStuff.Caching.FileSystem;
-using static ThoughtStuff.Core.FileSystemUtilities;
+using static ThoughtStuff.Caching.Tests.Testing.FileSystemUtilities;
 
 namespace ThoughtStuff.Caching.Tests;
 

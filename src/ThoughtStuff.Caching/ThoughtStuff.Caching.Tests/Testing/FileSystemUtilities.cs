@@ -1,7 +1,7 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-namespace ThoughtStuff.Core;
+namespace ThoughtStuff.Caching.Tests.Testing;
 
 public static class FileSystemUtilities
 {
