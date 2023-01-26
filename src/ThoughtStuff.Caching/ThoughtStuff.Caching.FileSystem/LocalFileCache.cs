@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
 using ThoughtStuff.Core;
-using ThoughtStuff.Core.Abstractions;
 using static System.Environment;
 using static ThoughtStuff.Caching.CachingInternal;
 

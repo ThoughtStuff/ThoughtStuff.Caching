@@ -6,7 +6,6 @@ using AutoFixture.AutoMoq;
 using AutoFixture.Xunit2;
 using ThoughtStuff.Caching.Azure;
 using ThoughtStuff.Caching.FileSystem;
-using ThoughtStuff.Core.Abstractions;
 using static ThoughtStuff.Core.FileSystemUtilities;
 
 namespace ThoughtStuff.Caching.Tests;

@@ -1,7 +1,7 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-namespace ThoughtStuff.Core.Abstractions;
+namespace ThoughtStuff.Caching.FileSystem;
 
 public interface IObjectFileSerializer
 {

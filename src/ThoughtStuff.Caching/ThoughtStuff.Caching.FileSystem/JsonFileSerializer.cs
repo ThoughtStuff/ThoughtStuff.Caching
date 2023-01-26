@@ -2,7 +2,6 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Newtonsoft.Json;
-using ThoughtStuff.Core.Abstractions;
 
 namespace ThoughtStuff.Caching.FileSystem;
 
