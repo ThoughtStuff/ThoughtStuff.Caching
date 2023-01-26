@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
-using System;
 using static ThoughtStuff.Caching.CachingInternal;
 
 namespace ThoughtStuff.Caching.FileSystem;
@@ -34,7 +33,7 @@ public class JsonCache : ITypedCache
     public string GetLocation(string key) => textCache.GetLocation(key);
 
     /// <inheritdoc/>
-    public T Get<T>(string key)
+    public T? Get<T>(string key)
     {
         var json = textCache.GetString(key);
         if (json is null)

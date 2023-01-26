@@ -3,7 +3,6 @@
 
 using Castle.DynamicProxy;
 using Microsoft.Extensions.Caching.Distributed;
-using System;
 using System.Linq.Expressions;
 
 namespace ThoughtStuff.Caching;

@@ -2,8 +2,6 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Castle.DynamicProxy;
-using System;
-using System.Threading.Tasks;
 using ThoughtStuff.Core;
 
 namespace ThoughtStuff.Caching;
@@ -40,7 +38,7 @@ public class CachingInterceptor<T> : IInterceptor
         var cacheKey = methodCacheKeyGenerator.GetCacheKey(invocation.Method, invocation.Arguments);
         if (cache.Contains(cacheKey))
         {
-            T result;
+            T? result;
             try
             {
                 result = cache.Get<T>(cacheKey);

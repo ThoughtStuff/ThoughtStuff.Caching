@@ -1,9 +1,9 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ThoughtStuff.Caching;
 
@@ -19,12 +19,12 @@ public class CacheExpirationService : ICacheExpirationService
     }
 
     ///<inheritdoc/>
-    public bool IsExpired(DistributedCacheEntryOptions cacheEntryOptions, DateTimeOffset updatedTime)
+    public bool IsExpired(DistributedCacheEntryOptions? cacheEntryOptions, DateTimeOffset updatedTime)
     {
         return IsExpired(cacheEntryOptions, updatedTime, DateTimeOffset.Now);
     }
 
-    internal bool IsExpired(DistributedCacheEntryOptions cacheEntryOptions, DateTimeOffset updatedTime, DateTimeOffset now)
+    internal bool IsExpired(DistributedCacheEntryOptions? cacheEntryOptions, DateTimeOffset updatedTime, DateTimeOffset now)
     {
         if (updatedTime > now)
             throw new ArgumentException("Last Update must have occurred in the past", nameof(now));
@@ -51,9 +51,10 @@ public class CacheExpirationService : ICacheExpirationService
         return now >= expiration;
     }
 
-    private static bool IsNullOrEmpty(DistributedCacheEntryOptions cacheEntryOptions)
+    private static bool IsNullOrEmpty([NotNullWhen(false)] DistributedCacheEntryOptions? cacheEntryOptions)
     {
-        return cacheEntryOptions is null ||
-            cacheEntryOptions.AbsoluteExpiration is null && cacheEntryOptions.AbsoluteExpirationRelativeToNow is null;
+        return cacheEntryOptions is null
+               || cacheEntryOptions.AbsoluteExpiration is null
+               && cacheEntryOptions.AbsoluteExpirationRelativeToNow is null;
     }
 }

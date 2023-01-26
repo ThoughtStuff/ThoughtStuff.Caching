@@ -3,9 +3,7 @@
 
 using Castle.DynamicProxy;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
 using ThoughtStuff.Caching;
-using ThoughtStuff.Core.Abstractions;
 
 // .NET Practice is to place ServiceCollectionExtensions in the following namespace
 // to improve discoverability of the extension method during service configuration

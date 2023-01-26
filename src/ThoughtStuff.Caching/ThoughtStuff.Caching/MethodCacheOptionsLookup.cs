@@ -4,9 +4,7 @@
 using Castle.DynamicProxy;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -14,6 +12,7 @@ namespace ThoughtStuff.Caching;
 
 public class MethodCacheOptionsLookup : IMethodCacheOptionsLookup
 {
+    // TODO: Use IDefaultCachePolicyService instead of hard-coded default here
     public static readonly TimeSpan DefaultRelativeExpiration = TimeSpan.FromHours(1);
     private readonly Dictionary<Type, DistributedCacheEntryOptions> defaultsByType = new();
     private readonly ConcurrentDictionary<Type, List<MethodInvocationMatcher>> matcherMap = new();

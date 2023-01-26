@@ -5,6 +5,6 @@ namespace ThoughtStuff.Core.Abstractions;
 
 public interface IObjectFileSerializer
 {
-    T DeserializeFromFile<T>(string path);
+    T? DeserializeFromFile<T>(string path);
     void SerializeToFile<T>(string path, T value);
 }

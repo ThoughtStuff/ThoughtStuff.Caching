@@ -1,10 +1,8 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -86,12 +84,12 @@ public static class StringExtensions
     /// <summary>
     /// Returns true of <paramref name="text"/> is null, empty or white space
     /// </summary>
-    public static bool IsEmpty(this string text) => string.IsNullOrWhiteSpace(text);
+    public static bool IsEmpty([NotNullWhen(returnValue: false)] this string? text) => string.IsNullOrWhiteSpace(text);
 
     /// <summary>
     /// Returns true of <paramref name="text"/> is not null, not empty and not only white space
     /// </summary>
-    public static bool IsNotEmpty(this string text) => !text.IsEmpty();
+    public static bool IsNotEmpty([NotNullWhen(returnValue: true)] this string? text) => !text.IsEmpty();
 
     public const char enDash = (char)0x2013;
     public const char emDash = (char)0x2014;

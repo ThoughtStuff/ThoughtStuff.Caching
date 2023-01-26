@@ -14,7 +14,7 @@ public class JsonFileSerializer : IObjectFileSerializer
         File.WriteAllText(path, json);
     }
 
-    public T DeserializeFromFile<T>(string path)
+    public T? DeserializeFromFile<T>(string path)
     {
         string json = File.ReadAllText(path);
         return JsonConvert.DeserializeObject<T>(json);

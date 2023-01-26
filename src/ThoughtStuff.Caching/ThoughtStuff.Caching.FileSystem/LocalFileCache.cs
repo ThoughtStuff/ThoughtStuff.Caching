@@ -5,10 +5,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using ThoughtStuff.Core;
 using ThoughtStuff.Core.Abstractions;
 using static System.Environment;
@@ -22,7 +18,7 @@ public class LocalFileCache : ITextCache, IManagedCache
     private readonly IObjectFileSerializer objectFileSerializer;
     private readonly ICacheExpirationService cacheExpirationService;
     private readonly IOptions<LocalFileCacheOptions> options;
-    private string baseDirectory;
+    private string? baseDirectory;
 
     public LocalFileCache(IObjectFileSerializer objectFileSerializer,
                           ICacheExpirationService cacheExpirationService,
@@ -101,7 +97,7 @@ public class LocalFileCache : ITextCache, IManagedCache
     }
 
     /// <inheritdoc/>
-    public string GetString(string key)
+    public string? GetString(string key)
     {
         if (!Contains(key))
             return null;
@@ -137,7 +133,7 @@ public class LocalFileCache : ITextCache, IManagedCache
 
     internal bool IsExpired(string metadataPath, DateTimeOffset updatedTime)
     {
-        LocalFileCacheMetadata metadata = null;
+        LocalFileCacheMetadata? metadata = null;
         try
         {
             if (File.Exists(metadataPath))

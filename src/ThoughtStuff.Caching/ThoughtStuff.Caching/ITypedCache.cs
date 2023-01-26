@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Caching.Distributed;
@@ -14,7 +14,7 @@ public interface ITypedCache : ICacheBase
     /// Return the cached value if present and not expired.
     /// Returns <see cref="default"/>(<typeparamref name="T"/>) otherwise.
     /// </summary>
-    T Get<T>(string key);
+    T? Get<T>(string key);
 
     /// <summary>
     /// Store the value in the cache using the given <see cref="DistributedCacheEntryOptions"/>.

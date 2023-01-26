@@ -1,7 +1,6 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using Castle.DynamicProxy;
 using System.Linq.Expressions;
 // Moq also has an IInvocation, so disambiguate:
 using Invocation = Castle.DynamicProxy.IInvocation;

@@ -1,8 +1,7 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Caching.Distributed;
-using System;
 
 namespace ThoughtStuff.Caching;
 
@@ -17,5 +16,5 @@ public interface ICacheExpirationService
     /// will cause a default cache policy to be used.
     /// See <seealso cref="IDefaultCachePolicyService"/>.
     /// </summary>
-    bool IsExpired(DistributedCacheEntryOptions cacheEntryOptions, DateTimeOffset updatedTime);
+    bool IsExpired(DistributedCacheEntryOptions? cacheEntryOptions, DateTimeOffset updatedTime);
 }

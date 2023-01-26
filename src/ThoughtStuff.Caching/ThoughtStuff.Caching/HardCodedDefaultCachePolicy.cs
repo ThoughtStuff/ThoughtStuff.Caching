@@ -2,7 +2,6 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Caching.Distributed;
-using System;
 
 namespace ThoughtStuff.Caching;
 

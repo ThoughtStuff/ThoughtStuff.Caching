@@ -2,8 +2,6 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Caching.Distributed;
-using System;
-using System.Collections.Generic;
 
 namespace ThoughtStuff.Caching;
 
@@ -39,7 +37,7 @@ public class DictionaryTextCache : ITextCache, IManagedCache
     public string GetLocation(string key) => key;
 
     /// <inheritdoc/>
-    public string GetString(string key) =>
+    public string? GetString(string key) =>
         Contains(key) ? dictionary[key].Value : default;
 
     /// <inheritdoc/>

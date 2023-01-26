@@ -14,7 +14,7 @@ public interface ITextCache : ICacheBase
     /// Return the cached string value if present and not expired.
     /// Returns null otherwise.
     /// </summary>
-    string GetString(string key);
+    string? GetString(string key);
 
     /// <summary>
     /// Set the string value in the cache using the given <see cref="DistributedCacheEntryOptions"/>
