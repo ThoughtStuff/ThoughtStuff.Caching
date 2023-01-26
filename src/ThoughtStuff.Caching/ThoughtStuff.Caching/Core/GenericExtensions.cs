@@ -14,6 +14,6 @@ public static class GenericExtensions
     public static bool IsDefault<T>([NotNullWhen(returnValue: false)] this T item)
     {
         // https://stackoverflow.com/a/864860/483776
-        return EqualityComparer<T>.Default.Equals(item, default);
+        return EqualityComparer<T?>.Default.Equals(item, default);
     }
 }
