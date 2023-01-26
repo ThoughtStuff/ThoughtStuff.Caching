@@ -3,8 +3,15 @@
 Injects look-through cache for configured services, for example:
 
 ```cs
+// Cache results returned from MySlowService in Mem Cache
 services.AddMethodCaching()
         .AddTransientWithCaching<IMySlowService, MySlowService, MyResult>();
+
+var app = builder.Build();
+
+// Configure method caching policies
+var methodCachePolicies = app.Services.GetRequiredService<IMethodCacheOptionsLookup>();
+methodCachePolicies.AddRelativeExpiration<ISlowExampleService>(TimeSpan.FromSeconds(30));
 ```
 
 ---

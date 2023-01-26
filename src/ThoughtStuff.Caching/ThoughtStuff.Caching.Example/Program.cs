@@ -1,6 +1,7 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
+using ThoughtStuff.Caching;
 using ThoughtStuff.Caching.Example;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,10 @@ builder.Services.AddTransientWithCaching<ISlowExampleService, SlowExampleService
 //builder.Services.AddCachingWithAzureBlobs(builder.Configuration);
 
 var app = builder.Build();
+
+// Configure method caching policies
+var methodCachePolicies = app.Services.GetRequiredService<IMethodCacheOptionsLookup>();
+methodCachePolicies.AddRelativeExpiration<ISlowExampleService>(TimeSpan.FromSeconds(30));
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
