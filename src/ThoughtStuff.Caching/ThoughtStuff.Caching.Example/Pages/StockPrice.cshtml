@@ -1,0 +1,30 @@
+@page
+@model ThoughtStuff.Caching.Example.Pages.StockPriceModel
+@{
+    ViewData["Title"] = "Stock Price";
+}
+
+<p>
+    Submit a ticker symbol and date to see a fake stock price.
+    Observe that each symbol+data combination is cached independently.
+    If you submit the same request twice it will be slow the first time and fast the second time.
+</p>
+
+
+<form>
+    <label class="form-label">Date</label>
+    <input class="form-control" asp-for="Date" />
+    <label class="form-label">Trading Symbol</label>
+    <input class="form-control" asp-for="Symbol" />
+    <input type="submit" />
+</form>
+
+@if (Model.StockPrice is not null)
+{
+    <div>
+        Open: @Model.StockPrice.Open.ToString("C") <br>
+        High: @Model.StockPrice.High.ToString("C") <br>
+        Low: @Model.StockPrice.Low.ToString("C") <br>
+        Close: @Model.StockPrice.Close.ToString("C") <br>
+    </div>
+}

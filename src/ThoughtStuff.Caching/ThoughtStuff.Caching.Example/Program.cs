@@ -9,8 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-builder.Services.AddMethodCaching();
-builder.Services.AddTransientWithCaching<ISlowExampleService, SlowExampleService, int>();
+// Cache method results of the following interfaces which return given return type
+builder.Services.AddMethodCaching()
+                .AddTransientWithCaching<ISlowExampleService, SlowExampleService, int>()
+                .AddTransientWithCaching<IWeatherService, BigService, WeatherForecast>()
+                .AddTransientWithCaching<IStockPriceService, BigService, DailyStockPrice>();
+
 //builder.Services.AddCachingWithAzureBlobs(builder.Configuration);
 
 var app = builder.Build();

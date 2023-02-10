@@ -6,7 +6,19 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <p>Learn about <a href="https://github.com/ThoughtStuff/ThoughtStuff.Caching">ThoughtStuff.Caching</a>.</p>
 </div>
 
-The meaning of life is @Model.Value
+<div class="m-4">
+    The meaning of life is <kbd>@Model.Value</kbd> <br />
+    The meaning of life takes 5 seconds to compute and is cached for 30 seconds.
+</div>
+
+<ul>
+    <li>
+        <a asp-page="Weather">Weather Forecast Example</a>
+    </li>
+    <li>
+        <a asp-page="StockPrice">Stock Price Example</a>
+    </li>
+</ul>

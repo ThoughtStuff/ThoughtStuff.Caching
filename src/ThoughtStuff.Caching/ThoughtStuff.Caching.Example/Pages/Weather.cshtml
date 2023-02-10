@@ -1,0 +1,27 @@
+@page
+@model ThoughtStuff.Caching.Example.Pages.WeatherModel
+@{
+    ViewData["Title"] = "Weather";
+}
+
+<p>
+    Submit a date to see a fake forecast.
+    Observe that each date's forecast is cached independently.
+    If you submit the same date twice it will be slow the first time and fast the second time.
+</p>
+
+
+<form>
+    <label class="form-label">Date</label>
+    <input class="form-control" asp-for="Date" />
+    <input type="submit" />
+</form>
+
+@if (Model.WeatherForecast is not null)
+{
+    <p>
+        Forecast:
+        @Model.WeatherForecast.ChanceOfRain.ToString("P0") chance of rain,
+        @Model.WeatherForecast.Temperature &deg;
+    </p>
+}

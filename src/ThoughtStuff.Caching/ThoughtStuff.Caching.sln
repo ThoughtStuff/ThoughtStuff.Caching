@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_BuildSettings", "_BuildSet
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThoughtStuff.Caching.Example", "ThoughtStuff.Caching.Example\ThoughtStuff.Caching.Example.csproj", "{0ACA6FC4-A860-4E11-A1BB-894FB3B8AA57}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThoughtStuff.Caching.FileSystem", "ThoughtStuff.Caching.FileSystem\ThoughtStuff.Caching.FileSystem.csproj", "{B95A15DF-F197-4738-918A-5BC026640F93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThoughtStuff.Caching.FileSystem", "ThoughtStuff.Caching.FileSystem\ThoughtStuff.Caching.FileSystem.csproj", "{B95A15DF-F197-4738-918A-5BC026640F93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
