@@ -66,6 +66,14 @@ The simplified interfaces may only have 1 function each and all be implemented b
 
 Only the `Transient` lifetime is implemented.
 
+### Cache Key uses Method Name + Arguments
+
+A cache key is automatically generated from the method invocation based on the method name and passed arguments.
+Other environment information is not included. Neither is the interface name included at this time.
+
+Be careful in multi-user or multi-tenant environments not to cache user-specific or tenant-specific results.
+For example, caching a method like `GetCurrentUserFavoriteColor()` would end up returning the same color for all users.
+To make it amenable to method caching change it to `GetUserFavoriteColor(userId)`.
 
 ---
 
@@ -75,12 +83,3 @@ Only the `Transient` lifetime is implemented.
 > so readily capable of realizing grand conceptual structures.
 
 &mdash; Fred P. Brooks
-
----
-
-TODO: 
-
-- [ ] Document running Azurite for blob tests
-- [ ] Docs on cache management
-
-
