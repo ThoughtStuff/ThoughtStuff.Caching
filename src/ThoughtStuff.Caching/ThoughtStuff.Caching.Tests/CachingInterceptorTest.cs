@@ -71,7 +71,7 @@ public class CachingInterceptorTest
         var result = service.BlockingOperation();
 
         result.Should().Be(42);
-        cache.Verify(c => c.Set("BlockingOperation()", 42, It.IsAny<DistributedCacheEntryOptions>()));
+        cache.Verify(c => c.Set("TestService.BlockingOperation()", 42, It.IsAny<DistributedCacheEntryOptions>()));
         service.Calls.Should().Be(1);
     }
 
@@ -91,7 +91,7 @@ public class CachingInterceptorTest
         // Verify the value returned with the interceptor has not been changed (thus service not called again)
         var result2 = service.BlockingOperation();
         result2.Should().Be(expected);
-        cache.Get<int>("BlockingOperation()").Should().Be(expected);
+        cache.Get<int>("TestService.BlockingOperation()").Should().Be(expected);
         service.Calls.Should().Be(1);
     }
 
@@ -108,7 +108,7 @@ public class CachingInterceptorTest
 
         // Allow the task continuation to run which sets the cache value
         await Task.Delay(100);
-        cache.Verify(c => c.Set("AsyncOperation()", 42, It.IsAny<DistributedCacheEntryOptions>()));
+        cache.Verify(c => c.Set("TestService.AsyncOperation()", 42, It.IsAny<DistributedCacheEntryOptions>()));
     }
 
     [Theory(DisplayName = "Caching: Interceptor Async Return Cached Result"), CacheTest]
@@ -123,7 +123,7 @@ public class CachingInterceptorTest
 
         // Allow the task continuation to run which sets the cache value
         await Task.Delay(100);
-        cache.Get<int>("AsyncOperation()").Should().Be(expected);
+        cache.Get<int>("TestService.AsyncOperation()").Should().Be(expected);
 
         // Change the value returned by the service
         service.SetOperationResult(notExpected);

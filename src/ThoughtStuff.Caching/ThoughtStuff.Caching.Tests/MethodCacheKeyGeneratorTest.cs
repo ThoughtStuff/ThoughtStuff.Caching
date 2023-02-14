@@ -5,6 +5,11 @@ namespace ThoughtStuff.Caching.Tests;
 
 public class MethodCacheKeyGeneratorTest
 {
+    public interface IExampleService
+    {
+        public int Example(string arg1, Uri uri, ExampleDto a, ExampleDto b);
+    }
+
     public class ExampleDto
     {
         public string? Key { get; set; }
@@ -12,13 +17,11 @@ public class MethodCacheKeyGeneratorTest
         public override string ToString() => $"Key: '{Key}'";
     }
 
-    public int Example(string arg1, Uri uri, ExampleDto a, ExampleDto b) => 0;
-
     [Fact(DisplayName = "Caching: Method Name Key")]
     public void CacheKey()
     {
         var subject = new MethodCacheKeyGenerator();
-        var methodInfo = GetType().GetMethod(nameof(Example))!;
+        var methodInfo = typeof(IExampleService).GetMethod(nameof(IExampleService.Example))!;
         var arguments = new object?[]
         {
             "xyz",
@@ -29,6 +32,6 @@ public class MethodCacheKeyGeneratorTest
 
         var key = subject.GetCacheKey(methodInfo, arguments);
 
-        key.Should().Be("Example('xyz','https://example.com/',(null),Key: 'gamma')");
+        key.Should().Be("IExampleService.Example('xyz','https://example.com/',(null),Key: 'gamma')");
     }
 }

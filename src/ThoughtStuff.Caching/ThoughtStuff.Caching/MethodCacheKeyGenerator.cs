@@ -7,8 +7,10 @@ namespace ThoughtStuff.Caching;
 
 public class MethodCacheKeyGenerator : IMethodCacheKeyGenerator
 {
+    /// <inheritdoc/>
     public string GetCacheKey(MethodInfo methodInfo, object?[] arguments)
     {
+        var declaringType = methodInfo.DeclaringType.Name;
         var methodName = methodInfo.Name;
         var argStrings = new List<string>(arguments.Length);
         foreach (var argument in arguments)
@@ -30,6 +32,6 @@ public class MethodCacheKeyGenerator : IMethodCacheKeyGenerator
             }
         }
         var argList = string.Join(",", argStrings);
-        return $"{methodName}({argList})";
+        return $"{declaringType}.{methodName}({argList})";
     }
 }
