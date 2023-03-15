@@ -51,7 +51,11 @@ public class CacheExpirationService : ICacheExpirationService
         return now >= expiration;
     }
 
-    private static bool IsNullOrEmpty([NotNullWhen(false)] DistributedCacheEntryOptions? cacheEntryOptions)
+    private static bool IsNullOrEmpty(
+#if NETSTANDARD2_1
+        [NotNullWhen(false)]
+#endif
+        DistributedCacheEntryOptions? cacheEntryOptions)
     {
         return cacheEntryOptions is null
                || cacheEntryOptions.AbsoluteExpiration is null

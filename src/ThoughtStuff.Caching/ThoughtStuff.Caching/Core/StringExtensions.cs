@@ -2,9 +2,7 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace ThoughtStuff.Caching.Core;
 
@@ -28,12 +26,20 @@ public static class StringExtensions
     /// <summary>
     /// Returns true of <paramref name="text"/> is null, empty or white space
     /// </summary>
-    public static bool IsEmpty([NotNullWhen(returnValue: false)] this string? text) => string.IsNullOrWhiteSpace(text);
+    public static bool IsEmpty(
+#if NETSTANDARD2_1
+        [NotNullWhen(returnValue: false)]
+#endif
+        this string? text) => string.IsNullOrWhiteSpace(text);
 
     /// <summary>
     /// Returns true of <paramref name="text"/> is not null, not empty and not only white space
     /// </summary>
-    public static bool IsNotEmpty([NotNullWhen(returnValue: true)] this string? text) => !text.IsEmpty();
+    public static bool IsNotEmpty(
+#if NETSTANDARD2_1
+        [NotNullWhen(returnValue: true)]
+#endif
+        this string? text) => !text.IsEmpty();
 
     /// <summary>
     /// Replace the first occurence of <paramref name="oldValue"/> 
