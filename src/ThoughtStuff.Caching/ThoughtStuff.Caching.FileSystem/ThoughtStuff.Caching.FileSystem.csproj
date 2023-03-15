@@ -4,6 +4,18 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <Version>0.11.0</Version>
+    <Authors>jfoshee</Authors>
+    <Company>ThoughtStuff, LLC</Company>
+    <PackageProjectUrl>https://github.com/ThoughtStuff/ThoughtStuff.Caching</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ThoughtStuff/ThoughtStuff.Caching.git</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Injects look-through cache for configured services, for example, `services.AddTransientWithCaching&lt;ISlowExampleService, SlowExampleService, int&gt;()`</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +29,17 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="ThoughtStuff.Caching.Tests"></InternalsVisibleTo>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
