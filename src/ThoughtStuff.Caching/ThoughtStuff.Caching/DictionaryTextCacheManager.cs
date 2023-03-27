@@ -1,6 +1,7 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
+using System.Runtime.CompilerServices;
 using static ThoughtStuff.Caching.Core.StringUtilities;
 
 namespace ThoughtStuff.Caching;
@@ -39,6 +40,15 @@ public class DictionaryTextCacheManager : ICacheManager
             ++count;
         }
         return Task.FromResult(count);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<string> EnumerateKeys([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        foreach (var key in dictionary.Keys)
+        {
+            yield return key;
+        }
     }
 
     private IEnumerable<string> GetMatchingKeys(string keyWildcardExpression)

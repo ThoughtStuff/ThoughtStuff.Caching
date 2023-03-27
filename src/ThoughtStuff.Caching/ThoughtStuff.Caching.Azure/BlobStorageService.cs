@@ -83,8 +83,8 @@ public class BlobStorageService : IBlobStorageService
         var blobClient = GetBlobClientBlocking(blobName);
         BlobDownloadInfo download = blobClient.Download();
         var stream = download.Content;
-        using (var reader = new StreamReader(stream))
-            return reader.ReadToEnd();
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 
     /// <inheritdoc/>
@@ -183,10 +183,10 @@ public class BlobStorageService : IBlobStorageService
     private async Task<IAsyncEnumerable<string>> EnumerateBlobsMatchingPrefix(string prefix)
     {
         var container = await GetBlobContainerClient();
+        // TODO: Pass cancellation token
         var blobsPaged = container.GetBlobsAsync(prefix: prefix);
-        return blobsPaged
-            .AsAsyncEnumerable()
-            .Select(b => b.Name);
+        return blobsPaged.AsAsyncEnumerable()
+                         .Select(b => b.Name);
     }
 
     private async IAsyncEnumerable<string> EnumerateBlobsMatchingWildcards(string wildcardPattern)
@@ -195,6 +195,7 @@ public class BlobStorageService : IBlobStorageService
         var firstWildcard = wildcardPattern.IndexOfAny(new[] { '*', '?' });
         var prefix = wildcardPattern.Substring(0, firstWildcard);
         var regex = StringUtilities.WildcardToRegex(wildcardPattern);
+        // TODO: Pass cancellation token
         await foreach (var blobName in await EnumerateBlobsMatchingPrefix(prefix))
         {
             if (regex.IsMatch(blobName))

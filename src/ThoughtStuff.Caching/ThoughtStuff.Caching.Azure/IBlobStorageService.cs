@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using System;
@@ -103,6 +103,8 @@ public interface IBlobStorageService
     /// searching is optimized for matching blob names by prefix (i.e. virtual path).
     /// </summary>
     Task<IAsyncEnumerable<string>> EnumerateBlobs(string wildcardPattern);
+    // TODO: Pass cancellation token to EnumerateBlobs
+    // TODO: Convert to only return IAsyncEnumerable<string> https://stackoverflow.com/a/59690902/483776
 
     /// <summary>
     /// Enables public read-access for all blobs in the entire container.

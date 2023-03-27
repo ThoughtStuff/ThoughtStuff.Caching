@@ -1,7 +1,9 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ThoughtStuff.Caching.Azure;
@@ -28,6 +30,16 @@ public class AzureBlobTextCacheManager : ICacheManager
             ++count;
         }
         return count;
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
+    {
+        var keys = await blobStorageService.EnumerateBlobs("*");
+        await foreach (var key in keys)
+        {
+            yield return key;
+        }
     }
 
     /// <inheritdoc/>

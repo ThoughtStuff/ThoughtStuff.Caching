@@ -34,4 +34,10 @@ internal class MemoryCacheManager : ICacheManager
     {
         throw new NotSupportedException();
     }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }

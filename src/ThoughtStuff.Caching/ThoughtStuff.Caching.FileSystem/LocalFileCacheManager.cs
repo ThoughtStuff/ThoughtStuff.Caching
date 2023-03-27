@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using ThoughtStuff.Caching.Core;
@@ -62,5 +62,11 @@ internal sealed class LocalFileCacheManager : ICacheManager
             return files
                 .Where(file => regex.IsMatch(file.Name));
         });
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }
