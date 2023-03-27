@@ -22,7 +22,7 @@ public class AzureBlobTextCacheManager : ICacheManager
     {
         keyWildcardExpression = AzureBlobTextCache.KeyToBlobName(keyWildcardExpression, keepWildcards: true);
         // TODO: Possible to delete several blobs at once in a single request https://docs.microsoft.com/en-us/dotnet/api/azure.storage.blobs.specialized.blobbatchclient.deleteblobsasync?view=azure-dotnet
-        var blobs = await blobStorageService.EnumerateBlobs(keyWildcardExpression);
+        var blobs = blobStorageService.EnumerateBlobs(keyWildcardExpression);
         int count = 0;
         await foreach (var blob in blobs)
         {
@@ -35,7 +35,7 @@ public class AzureBlobTextCacheManager : ICacheManager
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
     {
-        var keys = await blobStorageService.EnumerateBlobs("*");
+        var keys = blobStorageService.EnumerateBlobs("*");
         await foreach (var key in keys)
         {
             yield return key;
@@ -52,7 +52,7 @@ public class AzureBlobTextCacheManager : ICacheManager
     public async Task<int> GetCountOfMatchingEntries(string keyWildcardExpression)
     {
         keyWildcardExpression = AzureBlobTextCache.KeyToBlobName(keyWildcardExpression, keepWildcards: true);
-        var blobs = await blobStorageService.EnumerateBlobs(keyWildcardExpression);
+        var blobs = blobStorageService.EnumerateBlobs(keyWildcardExpression);
         return await blobs.CountAsync();
     }
 }
