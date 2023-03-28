@@ -11,10 +11,10 @@ public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCa
     public void HasCacheMan(TCache cache)
     {
         cache.GetCacheManager()
-            .Should().NotBeNull();
+             .Should().NotBeNull();
     }
 
-    [Theory(DisplayName = "Caching Dictionay Mgmt: Entry Count"), CacheTest]
+    [Theory(DisplayName = "Caching Mgmt: Entry Count"), CacheTest]
     public async Task MgmtEntryCountAsync(TCache cache)
     {
         const int count = 37;
@@ -28,7 +28,24 @@ public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCa
             .Should().Be(count);
     }
 
-    [Theory(DisplayName = "Caching Dictionay Mgmt: Matching Entry Count"), CacheTest]
+    [Theory(DisplayName = "Caching Mgmt: Enumerate Keys"), CacheTest]
+    public void EnumeratingKeys(TCache cache)
+    {
+        const int count = 7;
+        var expected = Enumerable.Range(0, count)
+                                 .Select(i => i.ToString());
+        foreach (var key in expected)
+        {
+            cache.SetString(key, string.Empty);
+        }
+        var cacheManager = cache.GetCacheManager();
+
+        var keys = cacheManager.EnumerateKeys().ToEnumerable();
+
+        keys.Should().Equal(expected);
+    }
+
+    [Theory(DisplayName = "Caching Mgmt: Matching Entry Count"), CacheTest]
     public async Task MgmtMatchingEntryCountAsync(TCache cache)
     {
         var keys = new[]
@@ -110,7 +127,7 @@ public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCa
         }
     }
 
-    [Theory(DisplayName = "Caching Dictionay Mgmt: Deleting Matching Entries"), CacheTest]
+    [Theory(DisplayName = "Caching Mgmt: Deleting Matching Entries"), CacheTest]
     public async Task MgmtDeleteMatchingEntriesAsync(TCache cache)
     {
         var keys = new[]

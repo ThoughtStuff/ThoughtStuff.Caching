@@ -45,7 +45,6 @@ public class DictionaryTextCacheManager : ICacheManager
     /// <inheritdoc/>
     public IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
     {
-        // TODO: Unit tests
         return dictionary.Keys.ToAsyncEnumerable();
     }
 
