@@ -39,15 +39,23 @@ internal class MemoryCacheManager : ICacheManager
     }
 
     /// <inheritdoc/>
-    public Task<int> DeleteMatchingEntries(string keyWildcardExpression)
+    public async Task<int> DeleteMatchingEntries(string keyWildcardExpression)
     {
-        throw new NotSupportedException();
+        var matchingKeys = GetMatchingKeys(keyWildcardExpression);
+        int count = 0;
+        await foreach (var key in matchingKeys)
+        {
+            memoryCache.Remove(key);
+            ++count;
+        }
+        return count;
     }
 
     /// <inheritdoc/>
-    public Task<int> GetCountOfMatchingEntries(string keyWildcardExpression)
+    public async Task<int> GetCountOfMatchingEntries(string keyWildcardExpression)
     {
-        throw new NotSupportedException();
+        var matchingKeys = GetMatchingKeys(keyWildcardExpression);
+        return await matchingKeys.CountAsync();
     }
 
     /// <inheritdoc/>
@@ -56,5 +64,12 @@ internal class MemoryCacheManager : ICacheManager
         // Each item is a KeyValuePair<object, ICacheEntry>
         return EntriesCollection.Select(item => item.GetPropertyValue<string>("Key"))
                                 .ToAsyncEnumerable();
+    }
+
+    private IAsyncEnumerable<string> GetMatchingKeys(string keyWildcardExpression)
+    {
+        var regex = StringUtilities.WildcardToRegex(keyWildcardExpression);
+        var matchingKeys = EnumerateKeys().Where(key => regex.IsMatch(key));
+        return matchingKeys;
     }
 }
