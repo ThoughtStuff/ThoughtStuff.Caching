@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,9 +34,9 @@ public class AzureBlobTextCacheManager : ICacheManager
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> EnumerateKeys([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var keys = blobStorageService.EnumerateBlobs("*");
+        var keys = blobStorageService.EnumerateBlobs("*", cancellationToken);
         await foreach (var key in keys)
         {
             yield return key;

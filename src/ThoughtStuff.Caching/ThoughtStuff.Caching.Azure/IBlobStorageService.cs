@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ThoughtStuff.Caching.Azure;
@@ -102,8 +103,7 @@ public interface IBlobStorageService
     /// Trailing wildcards are the most efficent for Blob storage because
     /// searching is optimized for matching blob names by prefix (i.e. virtual path).
     /// </summary>
-    IAsyncEnumerable<string> EnumerateBlobs(string wildcardPattern);
-    // TODO: Pass cancellation token to EnumerateBlobs
+    IAsyncEnumerable<string> EnumerateBlobs(string wildcardPattern, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Enables public read-access for all blobs in the entire container.
