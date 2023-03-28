@@ -3,7 +3,7 @@
 
 using ThoughtStuff.Caching.FileSystem;
 
-namespace ThoughtStuff.Caching.Tests;
+namespace ThoughtStuff.Caching.Tests.FileSystem;
 
 /// <summary>
 /// This serves as "black box" test against the ITextCache service contract

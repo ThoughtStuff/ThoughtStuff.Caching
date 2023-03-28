@@ -1,7 +1,6 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using AutoFixture.Xunit2;
 using Castle.DynamicProxy;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;

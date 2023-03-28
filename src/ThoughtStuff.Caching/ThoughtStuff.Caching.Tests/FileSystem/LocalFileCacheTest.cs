@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using ThoughtStuff.Caching.FileSystem;
 using static ThoughtStuff.Caching.Tests.Testing.FileSystemUtilities;
 
-namespace ThoughtStuff.Caching.Tests;
+namespace ThoughtStuff.Caching.Tests.FileSystem;
 
 public class LocalFileCacheTest
 {

@@ -3,7 +3,7 @@
 
 using ThoughtStuff.Caching.FileSystem;
 
-namespace ThoughtStuff.Caching.Tests;
+namespace ThoughtStuff.Caching.Tests.FileSystem;
 
 public class JsonCacheTest
 {
