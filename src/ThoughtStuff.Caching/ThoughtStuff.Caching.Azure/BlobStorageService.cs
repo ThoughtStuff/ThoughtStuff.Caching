@@ -1,6 +1,10 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
+#if NETSTANDARD2_0
+#pragma warning disable CS8603 // Possible null reference return.
+#endif
+
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;

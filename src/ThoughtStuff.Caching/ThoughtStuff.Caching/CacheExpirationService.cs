@@ -1,6 +1,10 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
+#if NETSTANDARD2_0
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#endif
+
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
