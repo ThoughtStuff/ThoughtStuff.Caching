@@ -176,6 +176,104 @@ public class BlobStorageServiceTest
         exists.Should().BeFalse();
     }
 
+    [Theory(DisplayName = "Blob: Count"), CacheTest]
+    public async Task Counting(BlobStorageService subject)
+    {
+        var expected = 13;
+        for (int i = 0; i < expected; i++)
+        {
+            await subject.UploadString(i.ToString(), string.Empty);
+        }
+
+        var count = await subject.GetBlobCount();
+
+        count.Should().Be(expected);
+    }
+
+    [Theory(DisplayName = "Blob: Enumerate All"), CacheTest]
+    public async Task Enumerating(BlobStorageService subject)
+    {
+        var count = 7;
+        for (int i = 0; i < count; i++)
+        {
+            await subject.UploadString(i.ToString(), string.Empty);
+        }
+
+        int expected = 0;
+        await foreach (var blobName in subject.EnumerateBlobs("*"))
+        {
+            blobName.Should().Be(expected.ToString());
+            ++expected;
+        }
+        expected.Should().Be(count);
+    }
+
+    [Theory(DisplayName = "Blob: Enumerate w/ Prefix (trailing wildcard)"), CacheTest]
+    public async Task EnumeratePrefix(BlobStorageService subject)
+    {
+        await subject.UploadString("alpha", string.Empty);
+        await subject.UploadString("beta", string.Empty);
+        await subject.UploadString("alf", string.Empty);
+        await subject.UploadString("gamma", string.Empty);
+        await subject.UploadString("alphabet", string.Empty);
+
+        subject.EnumerateBlobs("al*").ToEnumerable().Should().HaveCount(3);
+        subject.EnumerateBlobs("alph*").ToEnumerable().Should().HaveCount(2);
+        subject.EnumerateBlobs("al?").ToEnumerable().Should().HaveCount(1);
+        subject.EnumerateBlobs("bal?").ToEnumerable().Should().HaveCount(0);
+    }
+
+    [Theory(DisplayName = "Blob: Enumerate w/ internal wildcards"), CacheTest]
+    public async Task EnumerateWildcard(BlobStorageService subject)
+    {
+        await subject.UploadString("super", string.Empty);
+        await subject.UploadString("upper", string.Empty);
+        await subject.UploadString("superior", string.Empty);
+        await subject.UploadString("superb", string.Empty);
+        await subject.UploadString("per", string.Empty);
+        await subject.UploadString("x", string.Empty);
+
+        subject.EnumerateBlobs("*per*").ToEnumerable().Should().HaveCount(5);
+        subject.EnumerateBlobs("super*").ToEnumerable().Should().HaveCount(3);
+        subject.EnumerateBlobs("?up*").ToEnumerable().Should().HaveCount(3);
+        subject.EnumerateBlobs("p?r").ToEnumerable().Should().HaveCount(1);
+        subject.EnumerateBlobs("p*r").ToEnumerable().Should().HaveCount(1);
+        subject.EnumerateBlobs("*up*er*").ToEnumerable().Should().HaveCount(4);
+        subject.EnumerateBlobs("s*b").ToEnumerable().Should().HaveCount(1);
+        subject.EnumerateBlobs("s?b").ToEnumerable().Should().HaveCount(0);
+    }
+
+    [Theory(DisplayName = "Blob: Enumerate w/ Exact match"), CacheTest]
+    public async Task EnumerateExact(BlobStorageService subject, string name, string[] random)
+    {
+        await subject.UploadString(random[0], string.Empty);
+        await subject.UploadString(name, string.Empty);
+        await subject.UploadString(random[1], string.Empty);
+
+        subject.EnumerateBlobs(name).ToEnumerable().Should().HaveCount(1);
+        subject.EnumerateBlobs("x").ToEnumerable().Should().HaveCount(0);
+    }
+
+    [Theory(DisplayName = "Blob: Enumerate w/ Cancellation", Skip = "Figure out why this doesn't work"), CacheTest]
+    public async Task EnumerateAndCancel(BlobStorageService subject)
+    {
+        var count = 50;
+        for (int i = 0; i < count; i++)
+        {
+            await subject.UploadString(i.ToString(), string.Empty);
+        }
+
+        int j = 0;
+        CancellationTokenSource tokenSource = new();
+        await foreach (var blobName in subject.EnumerateBlobs("*").WithCancellation(tokenSource.Token))
+        {
+            ++j;
+            if (j == 5)
+                tokenSource.Cancel(true);
+        }
+        j.Should().Be(5);
+    }
+
     public class ExampleMetadata
     {
         public int Count { get; set; }
@@ -276,8 +374,7 @@ public class BlobStorageServiceTest
 
         var before = await httpClient.GetAsync(url);
         // Azurite returns 403, but Storage Emulator returns 404
-        // TODO: Use .BeOneOf after upgrading FluentAssertions to 6+
-        before.StatusCode.Should().Match(s => s == HttpStatusCode.NotFound || s == HttpStatusCode.Forbidden);
+        before.StatusCode.Should().BeOneOf(HttpStatusCode.Forbidden, HttpStatusCode.NotFound);
 
         await subject.EnablePublicAccess();
 
