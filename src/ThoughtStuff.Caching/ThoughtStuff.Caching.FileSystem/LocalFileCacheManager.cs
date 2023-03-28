@@ -27,6 +27,15 @@ internal sealed class LocalFileCacheManager : ICacheManager
     }
 
     /// <inheritdoc/>
+    public IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
+    {
+        var directory = new DirectoryInfo(localFileCache.BaseDirectory);
+        return directory.EnumerateFiles("*.txt")
+                        .Select(f => Path.GetFileNameWithoutExtension(f.Name))
+                        .ToAsyncEnumerable();
+    }
+
+    /// <inheritdoc/>
     public async Task<int> DeleteMatchingEntries(string keyWildcardExpression)
     {
         var count = 0;
@@ -62,11 +71,5 @@ internal sealed class LocalFileCacheManager : ICacheManager
             return files
                 .Where(file => regex.IsMatch(file.Name));
         });
-    }
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
     }
 }
