@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 namespace ThoughtStuff.Caching.Azure;
@@ -23,4 +23,11 @@ public class AzureCachingOptions
     /// setting up storage the first time.
     /// </summary>
     public bool CreateBlobContainer { get; set; }
+
+    public AzureCachingOptions(string blobStorageConnectionString, string blobContainerName, bool createBlobContainer)
+    {
+        BlobStorageConnectionString = blobStorageConnectionString ?? throw new ArgumentNullException(nameof(blobStorageConnectionString));
+        BlobContainerName = blobContainerName ?? throw new ArgumentNullException(nameof(blobContainerName));
+        CreateBlobContainer = createBlobContainer;
+    }
 }
