@@ -4,7 +4,7 @@
 using AutoFixture;
 using ThoughtStuff.Caching.Azure;
 
-namespace ThoughtStuff.Caching.Tests;
+namespace ThoughtStuff.Caching.Tests.Azure;
 
 public class AzureBlobTextCacheTest : TextCacheTestBase<AzureBlobTextCache>
 {

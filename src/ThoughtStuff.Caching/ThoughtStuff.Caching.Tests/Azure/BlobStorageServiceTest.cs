@@ -8,7 +8,7 @@ using System.Net;
 using ThoughtStuff.Caching.Azure;
 using ThoughtStuff.Caching.Core;
 
-namespace ThoughtStuff.Caching.Tests;
+namespace ThoughtStuff.Caching.Tests.Azure;
 
 public class BlobStorageServiceTest
 {

@@ -5,7 +5,7 @@ using AutoFixture.Xunit2;
 using System.IO.Compression;
 using ThoughtStuff.Caching.Azure;
 
-namespace ThoughtStuff.Caching.Tests;
+namespace ThoughtStuff.Caching.Tests.Azure;
 
 public class ZipArchiveBlobStorageTest
 {
