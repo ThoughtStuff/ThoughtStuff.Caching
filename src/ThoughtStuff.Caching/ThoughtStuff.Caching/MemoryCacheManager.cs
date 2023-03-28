@@ -2,6 +2,8 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections;
+using ThoughtStuff.Caching.Core;
 
 namespace ThoughtStuff.Caching;
 
@@ -16,6 +18,19 @@ internal class MemoryCacheManager : ICacheManager
 
     private MemoryCache ConcreteMemoryCache => memoryCache as MemoryCache
                                                ?? throw new NotSupportedException("The current IMemoryCache implementation is not supported by MemoryCacheManager");
+
+    private IEnumerable<object> EntriesCollection
+    {
+        get
+        {
+            // EVIL: Using reflection to get access to the private concurrent dictionary that MemoryCache uses
+            return ConcreteMemoryCache.GetPropertyValue<ICollection>("EntriesCollection")
+                                      .Cast<object>();
+            // TODO: Cast to IEnumerable<KeyValuePair<object, ICacheEntry>>,
+            // but concrete type is KeyValuePair<object, internal CacheEntry>
+            // and KeyValuePair doesn't support variance
+        }
+    }
 
     /// <inheritdoc/>
     public Task<int> GetCacheEntryCount()
@@ -38,6 +53,8 @@ internal class MemoryCacheManager : ICacheManager
     /// <inheritdoc/>
     public IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        // Each item is a KeyValuePair<object, ICacheEntry>
+        return EntriesCollection.Select(item => item.GetPropertyValue<string>("Key"))
+                                .ToAsyncEnumerable();
     }
 }
