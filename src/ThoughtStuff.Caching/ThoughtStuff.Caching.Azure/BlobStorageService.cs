@@ -4,14 +4,7 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
-using System;
-using System.Linq;
-using System.IO;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Net.Http;
 using ThoughtStuff.Caching.Core;
-using System.Threading;
 using System.Runtime.CompilerServices;
 
 namespace ThoughtStuff.Caching.Azure;
@@ -159,7 +152,7 @@ public class BlobStorageService : IBlobStorageService
     /// <summary>
     /// Trims leading & trailing path separators. Throws if null or empty string.
     /// </summary>
-    private static string CleanBlobName(string blobName)
+    private static string CleanBlobName(string? blobName)
     {
         // Leading the name with path separator has the odd effect of
         // nullifying the entire virtual "path"

@@ -1,8 +1,6 @@
 ﻿// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using System.Collections.Generic;
-
 namespace ThoughtStuff.Caching.Azure;
 
 /// <summary>

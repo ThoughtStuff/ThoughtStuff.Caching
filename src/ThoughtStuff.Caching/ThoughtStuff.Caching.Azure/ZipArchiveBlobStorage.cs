@@ -1,11 +1,7 @@
 ﻿// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Threading.Tasks;
 
 namespace ThoughtStuff.Caching.Azure;
 

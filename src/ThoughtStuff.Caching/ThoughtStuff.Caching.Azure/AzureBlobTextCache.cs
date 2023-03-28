@@ -2,8 +2,6 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Caching.Distributed;
-using System;
-using System.Collections.Generic;
 using ThoughtStuff.Caching.Core;
 
 namespace ThoughtStuff.Caching.Azure;
@@ -37,7 +35,7 @@ public class AzureBlobTextCache : ITextCache, IManagedCache
     }
 
     /// <inheritdoc/>
-    public string GetString(string key)
+    public string? GetString(string key)
     {
         if (!Contains(key))
             return default;

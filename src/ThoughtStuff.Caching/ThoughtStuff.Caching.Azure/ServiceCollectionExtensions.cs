@@ -2,7 +2,6 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Configuration;
-using System;
 using ThoughtStuff.Caching;
 using ThoughtStuff.Caching.Azure;
 
