@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 namespace ThoughtStuff.Caching;
@@ -6,8 +6,8 @@ namespace ThoughtStuff.Caching;
 public interface ICacheBase
 {
     /// <summary>
-    /// Returns true if an item is in the cache and not expired.
-    /// If an item is expired it will be evicted.
+    /// Returns true if an entry is in the cache and not expired.
+    /// If an entry is expired it will be evicted.
     /// </summary>
     bool Contains(string key);
 
@@ -22,4 +22,9 @@ public interface ICacheBase
     /// The location may be hypothetical.
     /// </remarks>
     string GetLocation(string key);
+
+    /// <summary>
+    /// Removes the entry associated with the given <paramref name="key"/>.
+    /// </summary>
+    void Remove(string key);
 }

@@ -37,6 +37,9 @@ public class DictionaryTextCache : ITextCache, IManagedCache
     public string GetLocation(string key) => key;
 
     /// <inheritdoc/>
+    public void Remove(string key) => dictionary.Remove(key);
+
+    /// <inheritdoc/>
     public string? GetString(string key) =>
         Contains(key) ? dictionary[key].Value : default;
 

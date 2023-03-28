@@ -33,6 +33,9 @@ public class JsonCache : ITypedCache
     public string GetLocation(string key) => textCache.GetLocation(key);
 
     /// <inheritdoc/>
+    public void Remove(string key) => textCache.Remove(key);
+
+    /// <inheritdoc/>
     public T? Get<T>(string key)
     {
         var json = textCache.GetString(key);

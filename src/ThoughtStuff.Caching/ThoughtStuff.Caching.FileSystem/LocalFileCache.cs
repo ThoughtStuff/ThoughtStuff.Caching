@@ -130,6 +130,16 @@ public class LocalFileCache : ITextCache, IManagedCache
     }
 
     /// <inheritdoc/>
+    public void Remove(string key)
+    {
+        var valuePath = GetFilePath(key);
+        Delete(valuePath);
+        // TODO: Unit test that catches if we don't delete the metadata
+        var metadataPath = GetMetadataPath(key);
+        Delete(metadataPath);
+    }
+
+    /// <inheritdoc/>
     public ICacheManager GetCacheManager()
     {
         return new LocalFileCacheManager(this);

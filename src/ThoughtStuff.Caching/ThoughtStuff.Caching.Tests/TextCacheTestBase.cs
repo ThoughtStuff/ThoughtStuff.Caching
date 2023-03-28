@@ -16,7 +16,8 @@ public abstract class TextCacheTestBase<TCache> where TCache : ITextCache
     public void NotContains(TCache cache, string key)
     {
         cache.Contains(key)
-            .Should().BeFalse();
+             .Should()
+             .BeFalse();
     }
 
     [Theory(DisplayName = "Text Cache: Contains"), CacheTest]
@@ -25,7 +26,8 @@ public abstract class TextCacheTestBase<TCache> where TCache : ITextCache
         cache.SetString(key, value);
 
         cache.Contains(key)
-            .Should().BeTrue();
+             .Should()
+             .BeTrue();
     }
 
     [Theory(DisplayName = "Text Cache: Set/Get"), CacheTest]
@@ -34,7 +36,57 @@ public abstract class TextCacheTestBase<TCache> where TCache : ITextCache
         cache.SetString(key, value);
 
         cache.GetString(key)
-            .Should().Be(value);
+             .Should()
+             .Be(value);
+    }
+
+    [Theory(DisplayName = "Text Cache: Set/Remove"), CacheTest]
+    public void SetRemove(TCache cache, string key, string value)
+    {
+        cache.SetString(key, value);
+
+        cache.Remove(key);
+
+        cache.Contains(key)
+             .Should()
+             .BeFalse();
+        cache.GetString(key)
+             .Should()
+             .BeNull();
+    }
+
+    [Theory(DisplayName = "Text Cache: Remove missing"), CacheTest]
+    public void RemoveMissing(TCache cache, string key)
+    {
+        // Should not throw an exception or have any side effect
+        cache.Remove(key);
+
+        cache.Contains(key)
+             .Should()
+             .BeFalse();
+        cache.GetString(key)
+             .Should()
+             .BeNull();
+    }
+
+    [Theory(DisplayName = "Text Cache: Get/Set/Remove strange key"), CacheTest]
+    public void StrangeKey(TCache cache, string value)
+    {
+        var key = " -this/key ? includes * strange characters!";
+
+        cache.SetString(key, value);
+        cache.GetString(key)
+             .Should()
+             .Be(value);
+
+        cache.Remove(key);
+
+        cache.Contains(key)
+             .Should()
+             .BeFalse();
+        cache.GetString(key)
+             .Should()
+             .BeNull();
     }
 
     [Theory(DisplayName = "Text Cache: Set Twice"), CacheTest]

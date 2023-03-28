@@ -58,6 +58,13 @@ public class AzureBlobTextCache : ITextCache, IManagedCache
         return KeyToBlobName(key);
     }
 
+    /// <inheritdoc/>
+    public void Remove(string key)
+    {
+        var blobName = KeyToBlobName(key);
+        blobStorageService.DeleteBlocking(blobName);
+    }
+
     public ICacheManager GetCacheManager()
     {
         return new AzureBlobTextCacheManager(blobStorageService);

@@ -33,6 +33,24 @@ public class JsonCacheTest
         fetched.Should().BeEquivalentTo(value);
     }
 
+    [Theory(DisplayName = "Caching JSON: Remove"), CacheTest]
+    public void Removal([Frozen] ITextCache textCache, JsonCache jsonCache, string key)
+    {
+        jsonCache.Set(key, 42);
+
+        jsonCache.Remove(key);
+
+        textCache.GetString(key).Should().BeNull();
+        jsonCache.Get<int?>(key).Should().BeNull();
+    }
+
+    [Theory(DisplayName = "Caching JSON: Remove Absent"), CacheTest]
+    public void RemoveAbsent(JsonCache jsonCache, string key)
+    {
+        // Does not throw
+        jsonCache.Remove(key);
+    }
+
     [Theory(DisplayName = "Caching JSON: Default values"), CacheTest]
     public void ReturnsDefault(JsonCache jsonCache, string missingKey)
     {

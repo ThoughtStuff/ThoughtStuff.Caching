@@ -28,6 +28,9 @@ public class MemoryCacheTypedCache : ITypedCache, IManagedCache
     public T Get<T>(string key) => memoryCache.Get<T>(key);
 
     /// <inheritdoc/>
+    public void Remove(string key) => memoryCache.Remove(key);
+
+    /// <inheritdoc/>
     public void Set<T>(string key, T value, DistributedCacheEntryOptions options)
     {
         var memCacheOptions = new MemoryCacheEntryOptions
