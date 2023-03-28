@@ -1,8 +1,6 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using Microsoft.Extensions.Caching.Memory;
-
 namespace ThoughtStuff.Caching.Tests;
 
 public class MemoryCacheTypedCacheTest
@@ -13,12 +11,9 @@ public class MemoryCacheTypedCacheTest
         cache.GetLocation(key).Should().Be(key);
     }
 
-    [Fact(DisplayName = "MemoryCache: Basic usage")]
-    public void MemoryCacheBasic()
+    [Theory(DisplayName = "MemoryCache: Basic usage"), MemCacheTest]
+    public void MemoryCacheBasic(MemoryCacheTypedCache subject)
     {
-        var memCacheOptions = new MemoryCacheOptions();
-        var memCache = new MemoryCache(memCacheOptions);
-        var subject = new MemoryCacheTypedCache(memCache);
         const string key = "test-key";
         const string value = "value 123";
         subject.Contains(key).Should().BeFalse();

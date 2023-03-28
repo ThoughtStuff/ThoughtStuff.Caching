@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Net.Http;
 using ThoughtStuff.Caching.Core;
+using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace ThoughtStuff.Caching.Azure;
 
@@ -83,8 +85,8 @@ public class BlobStorageService : IBlobStorageService
         var blobClient = GetBlobClientBlocking(blobName);
         BlobDownloadInfo download = blobClient.Download();
         var stream = download.Content;
-        using (var reader = new StreamReader(stream))
-            return reader.ReadToEnd();
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 
     /// <inheritdoc/>
@@ -124,14 +126,15 @@ public class BlobStorageService : IBlobStorageService
     }
 
     /// <inheritdoc/>
-    public async Task<IAsyncEnumerable<string>> EnumerateBlobs(string wildcardPattern)
+    public IAsyncEnumerable<string> EnumerateBlobs(string wildcardPattern, CancellationToken cancellationToken = default)
     {
         var wildcardCount = wildcardPattern
             .Count(c => c == '*' || c == '?');
         // No wildcards: Search by exact name
         if (wildcardCount == 0)
         {
-            var exists = await Exists(wildcardPattern);
+            // TODO: Use async Exists here:
+            var exists = ExistsBlocking(wildcardPattern);
             if (exists)
                 return new[] { wildcardPattern }.ToAsyncEnumerable();
             return AsyncEnumerable.Empty<string>();
@@ -140,10 +143,10 @@ public class BlobStorageService : IBlobStorageService
         if (wildcardCount == 1 && wildcardPattern.EndsWith("*"))
         {
             var prefix = wildcardPattern.TrimEnd('*');
-            return await EnumerateBlobsMatchingPrefix(prefix);
+            return EnumerateBlobsMatchingPrefix(prefix, cancellationToken);
         }
         // Otherwise: must manually search through all names for matches
-        return EnumerateBlobsMatchingWildcards(wildcardPattern);
+        return EnumerateBlobsMatchingWildcards(wildcardPattern, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -180,22 +183,26 @@ public class BlobStorageService : IBlobStorageService
         return new Uri(unescaped);
     }
 
-    private async Task<IAsyncEnumerable<string>> EnumerateBlobsMatchingPrefix(string prefix)
+    private async IAsyncEnumerable<string> EnumerateBlobsMatchingPrefix(string prefix,
+                                                                        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var container = await GetBlobContainerClient();
-        var blobsPaged = container.GetBlobsAsync(prefix: prefix);
-        return blobsPaged
-            .AsAsyncEnumerable()
-            .Select(b => b.Name);
+        var blobsPaged = container.GetBlobsAsync(prefix: prefix, cancellationToken: cancellationToken);
+        var names = blobsPaged.AsAsyncEnumerable()
+                              .Select(b => b.Name);
+        // Iterate so we don't need to return Task<IAsyncEnumerable>
+        await foreach (var name in names)
+            yield return name;
     }
 
-    private async IAsyncEnumerable<string> EnumerateBlobsMatchingWildcards(string wildcardPattern)
+    private async IAsyncEnumerable<string> EnumerateBlobsMatchingWildcards(string wildcardPattern,
+                                                                           [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         // Can use index of first wildcard to determine common prefix
         var firstWildcard = wildcardPattern.IndexOfAny(new[] { '*', '?' });
         var prefix = wildcardPattern.Substring(0, firstWildcard);
         var regex = StringUtilities.WildcardToRegex(wildcardPattern);
-        await foreach (var blobName in await EnumerateBlobsMatchingPrefix(prefix))
+        await foreach (var blobName in EnumerateBlobsMatchingPrefix(prefix, cancellationToken))
         {
             if (regex.IsMatch(blobName))
                 yield return blobName;

@@ -3,7 +3,6 @@
 
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using AutoFixture.Xunit2;
 using ThoughtStuff.Caching.Azure;
 using ThoughtStuff.Caching.FileSystem;
 using static ThoughtStuff.Caching.Tests.Testing.FileSystemUtilities;
@@ -13,7 +12,7 @@ namespace ThoughtStuff.Caching.Tests;
 public class CacheTestAttribute : AutoDataAttribute
 {
     public CacheTestAttribute()
-        : base(() => BuildFixture())
+        : base(BuildFixture)
     {
     }
 

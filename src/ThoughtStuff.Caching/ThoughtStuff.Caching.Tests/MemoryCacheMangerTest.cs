@@ -3,50 +3,42 @@
 
 namespace ThoughtStuff.Caching.Tests;
 
-public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCache, ITextCache
+public class MemoryCacheMangerTest
 {
-    private static string RandomString() => Guid.NewGuid().ToString();
+    // TODO: These tests are similar to TextCacheManagerTestBase
 
-    [Theory(DisplayName = "Text Cache: Returns Cache Manager"), CacheTest]
-    public void HasCacheMan(TCache cache)
+    [Theory(DisplayName = "MemoryCache Mgmt: Entry Count"), MemCacheTest]
+    public async Task EntryCount(MemoryCacheTypedCache cache)
     {
-        cache.GetCacheManager()
-             .Should().NotBeNull();
-    }
-
-    [Theory(DisplayName = "Caching Mgmt: Entry Count"), CacheTest]
-    public async Task MgmtEntryCountAsync(TCache cache)
-    {
-        const int count = 37;
+        var subject = cache.GetCacheManager();
+        const int count = 12;
         for (int i = 0; i < count; i++)
         {
-            cache.SetString(RandomString(), RandomString());
+            cache.Set(i.ToString(), i);
         }
-        var cacheManager = cache.GetCacheManager();
 
-        (await cacheManager.GetCacheEntryCount())
-            .Should().Be(count);
+        (await subject.GetCacheEntryCount()).Should().Be(count);
     }
 
-    [Theory(DisplayName = "Caching Mgmt: Enumerate Keys"), CacheTest]
-    public void EnumeratingKeys(TCache cache)
+    [Theory(DisplayName = "Caching Mgmt: Enumerate Keys"), MemCacheTest]
+    public void EnumeratingKeys(MemoryCacheTypedCache cache)
     {
         const int count = 7;
         var expected = Enumerable.Range(0, count)
                                  .Select(i => i.ToString());
         foreach (var key in expected)
         {
-            cache.SetString(key, string.Empty);
+            cache.Set(key, string.Empty);
         }
         var cacheManager = cache.GetCacheManager();
 
         var keys = cacheManager.EnumerateKeys().ToEnumerable();
 
-        keys.Should().Equal(expected);
+        keys.Should().BeEquivalentTo(expected);
     }
 
-    [Theory(DisplayName = "Caching Mgmt: Matching Entry Count"), CacheTest]
-    public async Task MgmtMatchingEntryCountAsync(TCache cache)
+    [Theory(DisplayName = "Caching Mgmt: Matching Entry Count"), MemCacheTest]
+    public async Task MgmtMatchingEntryCountAsync(MemoryCacheTypedCache cache)
     {
         var keys = new[]
         {
@@ -70,7 +62,7 @@ public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCa
         };
         foreach (var key in keys)
         {
-            cache.SetString(key, RandomString());
+            cache.Set(key, string.Empty);
         }
         var cacheManager = cache.GetCacheManager();
 
@@ -127,8 +119,8 @@ public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCa
         }
     }
 
-    [Theory(DisplayName = "Caching Mgmt: Deleting Matching Entries"), CacheTest]
-    public async Task MgmtDeleteMatchingEntriesAsync(TCache cache)
+    [Theory(DisplayName = "Caching Mgmt: Deleting Matching Entries"), MemCacheTest]
+    public async Task MgmtDeleteMatchingEntriesAsync(MemoryCacheTypedCache cache)
     {
         var keys = new[]
         {
@@ -146,7 +138,7 @@ public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCa
         };
         foreach (var key in keys)
         {
-            cache.SetString(key, RandomString());
+            cache.Set(key, string.Empty);
         }
         var cacheManager = cache.GetCacheManager();
 

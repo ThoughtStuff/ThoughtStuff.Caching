@@ -1,4 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
+// Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using ThoughtStuff.Caching.Core;
@@ -24,6 +24,15 @@ internal sealed class LocalFileCacheManager : ICacheManager
             var files = directory.EnumerateFiles("*.txt");
             return files.Count();
         });
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
+    {
+        var directory = new DirectoryInfo(localFileCache.BaseDirectory);
+        return directory.EnumerateFiles("*.txt")
+                        .Select(f => Path.GetFileNameWithoutExtension(f.Name))
+                        .ToAsyncEnumerable();
     }
 
     /// <inheritdoc/>

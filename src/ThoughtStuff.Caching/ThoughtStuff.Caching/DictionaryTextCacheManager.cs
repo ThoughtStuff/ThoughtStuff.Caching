@@ -41,12 +41,17 @@ public class DictionaryTextCacheManager : ICacheManager
         return Task.FromResult(count);
     }
 
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string> EnumerateKeys(CancellationToken cancellationToken = default)
+    {
+        return dictionary.Keys.ToAsyncEnumerable();
+    }
+
     private IEnumerable<string> GetMatchingKeys(string keyWildcardExpression)
     {
         var regex = WildcardToRegex(keyWildcardExpression);
-        var matchingKeys = dictionary
-            .Keys
-            .Where(key => regex.IsMatch(key));
+        var matchingKeys = dictionary.Keys
+                                     .Where(key => regex.IsMatch(key));
         return matchingKeys;
     }
 }
