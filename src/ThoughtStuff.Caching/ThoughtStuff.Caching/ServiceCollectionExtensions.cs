@@ -20,8 +20,29 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddMethodCaching(this IServiceCollection services)
     {
+        // Default Cache is MemotyCache
         // Use `TryAdd` so as not to replace an ITypedCache that was previously configured
         services.TryAddTransient<ITypedCache, MemoryCacheTypedCache>();
+
+        // Register Cache Management service accessors
+        // - IManagedCache is cast from configured ITypedCache
+        services.AddTransient(sp =>
+        {
+            var cache = sp.GetRequiredService<ITypedCache>();
+            if (cache is IManagedCache managedCache)
+            {
+                return managedCache;
+            }
+            throw new InvalidOperationException($"The configured {nameof(ITypedCache)} '{cache.GetType().Name}' does not implement {nameof(IManagedCache)}.");
+        });
+        // - ICacheManager is fetched from IManagedCache
+        services.AddTransient(sp =>
+        {
+            var managedCache = sp.GetRequiredService<IManagedCache>();
+            return managedCache.GetCacheManager();
+        });
+
+        // Method Caching
         services.AddTransient<IMethodCacheKeyGenerator, MethodCacheKeyGenerator>();
         // MethodCacheOptionsLookup must be added as singleton because the mappings are stored in member variables
         services.AddSingleton<IMethodCacheOptionsLookup, MethodCacheOptionsLookup>();
