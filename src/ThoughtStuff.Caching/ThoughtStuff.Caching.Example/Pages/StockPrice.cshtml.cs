@@ -12,8 +12,14 @@ public class StockPriceModel : PageModel
         _stockPriceService = stockPriceService ?? throw new ArgumentNullException(nameof(stockPriceService));
     }
 
+#if NET7_0
     [BindProperty(SupportsGet = true)]
     public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+#else
+    [BindProperty(SupportsGet = true)]
+    public DateTime Date { get; set; } = DateTime.Today;
+#endif
+
     [BindProperty(SupportsGet = true)]
     public string Symbol { get; set; } = "ABCD";
 
@@ -21,6 +27,6 @@ public class StockPriceModel : PageModel
 
     public async Task OnGetAsync()
     {
-        StockPrice = await _stockPriceService.GetStockPrice(Symbol, Date);
+        StockPrice = await _stockPriceService.GetStockPrice(Symbol, DateOnly.FromDateTime(Date));
     }
 }
