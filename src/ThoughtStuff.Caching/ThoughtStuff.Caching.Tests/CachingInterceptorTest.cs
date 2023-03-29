@@ -28,6 +28,7 @@ public class CachingInterceptorTest
     {
         private int operationResult = 42;
         public int Calls { get; private set; }
+        public bool VoidMethodCalled { get; private set; }
 
         public virtual int BlockingOperation()
         {
@@ -42,6 +43,8 @@ public class CachingInterceptorTest
             await Task.Delay(50);
             return operationResult;
         }
+
+        public virtual void VoidMethod() => VoidMethodCalled = true;
 
         public void SetOperationResult(int count)
         {
@@ -131,5 +134,17 @@ public class CachingInterceptorTest
         var result2 = await service.AsyncOperation();
         result2.Should().Be(expected);
         service.Calls.Should().Be(1);
+    }
+
+    [Theory(DisplayName = "Caching: Ignore Void Returning Invocations"), AutoMoq]
+    public void VoidReturn([Frozen] Mock<ITypedCache> cache)
+    {
+        cache.Setup(c => c.Contains(It.IsAny<string>())).Returns(false);
+        var service = MakeProxyService(cache.Object);
+
+        service.VoidMethod();
+
+        //cache.Verify(c => c.Set(It.IsAny<string>(), 42, It.IsAny<DistributedCacheEntryOptions>()));
+        service.VoidMethodCalled.Should().BeTrue();
     }
 }

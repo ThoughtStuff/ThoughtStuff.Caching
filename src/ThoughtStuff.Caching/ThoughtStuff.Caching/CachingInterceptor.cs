@@ -24,7 +24,14 @@ public class CachingInterceptor<T> : IInterceptor
     public void Intercept(IInvocation invocation)
     {
         var returnType = invocation.Method.ReturnType;
-        // TODO: If method has no return type it was misconfigured
+        // If method has void return type, it cannot be cached, so pass it through and do nothing
+        if (returnType == typeof(void))
+        {
+            // TODO: if invocation == set_Prop then cache.remove(get_Prop). Property setters return void.
+            invocation.Proceed();
+            return;
+        }
+
         var isAsync = typeof(Task).IsAssignableFrom(returnType);
         var expectedType = isAsync ? typeof(Task<T>) : typeof(T);
 
