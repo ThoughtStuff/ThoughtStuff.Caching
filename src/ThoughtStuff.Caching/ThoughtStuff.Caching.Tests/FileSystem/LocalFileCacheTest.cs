@@ -1,9 +1,8 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using AutoFixture.Xunit2;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
+using System.Text.Json;
 using ThoughtStuff.Caching.FileSystem;
 using static ThoughtStuff.Caching.Tests.Testing.FileSystemUtilities;
 
@@ -93,7 +92,7 @@ public class LocalFileCacheTest
         string metaPath = Path.Combine(baseDirectory, "the-key.meta");
         File.Exists(metaPath).Should().BeTrue();
         var metaText = File.ReadAllText(metaPath);
-        var metadata = JsonConvert.DeserializeObject<LocalFileCacheMetadata>(metaText)!;
+        var metadata = JsonSerializer.Deserialize<LocalFileCacheMetadata>(metaText)!;
         metadata.CacheEntryOptions.Should().BeEquivalentTo(options);
     }
 

@@ -36,17 +36,17 @@ public class ObjectDictionaryConverterTest
 
     [Theory(DisplayName = "ObjectDictionary: To Object"), AutoMoq]
     public void ConvertingToObject(ObjectDictionaryConverter subject,
-                                       string name,
-                                       int age,
-                                       DateTimeOffset date,
-                                       TimeSpan timeSpan)
+                                   string name,
+                                   int age,
+                                   DateTimeOffset date,
+                                   TimeSpan timeSpan)
     {
         var dictionary = new Dictionary<string, string>
         {
-            ["Name"] = $"'{name}'",
-            ["Age"] = $"'{age}'",
-            ["Date"] = $"'{date:MM/dd/yyyy hh:mm:ss.fffffff tt}'",
-            ["TimeSpan"] = $"'{timeSpan}'"
+            ["Name"] = $"\"{name}\"",
+            ["Age"] = $"\"{age}\"",
+            ["Date"] = $"\"{date:o}\"",    // Round-trip ISO 8601 compatible
+            ["TimeSpan"] = $"\"{timeSpan}\""
         };
 
         var item = subject.ConvertToObject<ExampleItem>(dictionary);
