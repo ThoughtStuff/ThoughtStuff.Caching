@@ -5,4 +5,19 @@
     Cache Manager
 </h1>
 
-There are @Model.EntryCount entries in the cache!
+<p>
+    There are @Model.EntryCount entries in the cache!
+</p>
+
+<h4>
+    Keys
+</h4>
+
+<ul>
+    @await foreach (var key in Model.Keys)
+    {
+        <li>
+            <code>@key</code>
+        </li>
+    }
+</ul>
