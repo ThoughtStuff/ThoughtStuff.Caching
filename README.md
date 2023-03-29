@@ -70,7 +70,7 @@ Only the `Transient` lifetime is implemented.
 
 A cache key is automatically generated from the method invocation based on the method name and passed arguments.
 For example: `"IMyBookService.GetBookInfo('The Great Gatsby')"`.
-Other environment information is not included. Neither is the interface name included at this time.
+Other environment information is not included.
 
 Be careful in multi-user or multi-tenant environments not to cache user-specific or tenant-specific results.
 For example, caching a method like `GetCurrentUserFavoriteColor()` would end up returning the same color for all users.
