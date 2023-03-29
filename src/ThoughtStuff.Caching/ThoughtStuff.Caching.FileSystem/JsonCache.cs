@@ -2,7 +2,8 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using static ThoughtStuff.Caching.CachingInternal;
 
 namespace ThoughtStuff.Caching.FileSystem;
@@ -19,12 +20,10 @@ public class JsonCache : ITypedCache
         this.textCache = textCache ?? throw new ArgumentNullException(nameof(textCache));
     }
 
-    private JsonSerializerSettings JsonSerializerSettings =>
-        new JsonSerializerSettings
-        {
-            // `FilingData` requires preserving references for matching periods
-            PreserveReferencesHandling = PreserveReferencesHandling.Objects
-        };
+    private JsonSerializerOptions JsonSerializerOptions => new()
+    {
+        ReferenceHandler = ReferenceHandler.Preserve
+    };
 
     /// <inheritdoc/>
     public bool Contains(string key) => textCache.Contains(key);
@@ -41,14 +40,14 @@ public class JsonCache : ITypedCache
         var json = textCache.GetString(key);
         if (json is null)
             return default;
-        return JsonConvert.DeserializeObject<T>(json, JsonSerializerSettings);
+        return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions);
     }
 
     /// <inheritdoc/>
     public void Set<T>(string key, T value, DistributedCacheEntryOptions options)
     {
         ProhibitDefaultValue(key, value);
-        var json = JsonConvert.SerializeObject(value, JsonSerializerSettings);
+        var json = JsonSerializer.Serialize(value, JsonSerializerOptions);
         textCache.SetString(key, json, options);
     }
 }
