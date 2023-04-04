@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace ThoughtStuff.Caching.Tests.FileSystem;
 
-public class ServiceCollectionExtensionsTest
+public class FileSystemCacheIntegrationTest
 {
     public interface IExampleService
     {
@@ -20,7 +20,9 @@ public class ServiceCollectionExtensionsTest
             return new Dictionary<string, string>
             {
                 {"name", name},
-                { "age", "42" }
+                { "age", "42" },
+                // Store a date using high precision to detect if called twice
+                { "now", DateTime.Now.ToString("O") },
             };
         }
     }
@@ -47,5 +49,9 @@ public class ServiceCollectionExtensionsTest
         // Remove $id which is serialized for preserving references
         serialized.Remove("$id");
         serialized.Should().BeEquivalentTo(info);
+
+        // Call Service again to verify cached
+        var info2 = exampleService.GetInfo("Megatron");
+        info2.Should().BeEquivalentTo(info);
     }
 }

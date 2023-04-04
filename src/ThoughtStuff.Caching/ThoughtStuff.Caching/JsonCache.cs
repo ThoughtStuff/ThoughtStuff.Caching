@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using static ThoughtStuff.Caching.CachingInternal;
 
-namespace ThoughtStuff.Caching.FileSystem;
+namespace ThoughtStuff.Caching;
 
 /// <summary>
 /// Wraps a <see cref="ITextCache"/> and uses JSON to serialize objects into and out of the <see cref="ITextCache"/>.

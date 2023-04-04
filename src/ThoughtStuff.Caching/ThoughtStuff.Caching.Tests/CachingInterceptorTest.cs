@@ -4,7 +4,6 @@
 using Castle.DynamicProxy;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using ThoughtStuff.Caching.FileSystem;
 // Moq also has an IInvocation, so disambiguate:
 using Invocation = Castle.DynamicProxy.IInvocation;
 
