@@ -10,8 +10,8 @@ public class AzureCachingOptions
     /// </summary>
     public const string Name = nameof(AzureCachingOptions);
 
-    public string BlobStorageConnectionString { get; set; }
-    public string BlobContainerName { get; set; }
+    public string? BlobStorageConnectionString { get; set; }
+    public string? BlobContainerName { get; set; }
 
     /// <summary>
     /// Enable to check for the container's existence,
@@ -23,6 +23,12 @@ public class AzureCachingOptions
     /// setting up storage the first time.
     /// </summary>
     public bool CreateBlobContainer { get; set; }
+
+    // Empty constructor required for Options pattern
+    // so OptionsFactory can create an instance
+    public AzureCachingOptions()
+    {
+    }
 
     public AzureCachingOptions(string blobStorageConnectionString, string blobContainerName, bool createBlobContainer)
     {
