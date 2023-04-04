@@ -12,11 +12,12 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds Castle Dynamic Proxy based caching requirements.
+    /// Adds support for inserting caching of service method calls.
+    /// <para/>
     /// Required for using <see cref="AddTransientWithCaching{TService, TImplementation, TResult}(IServiceCollection)"/>
     /// <para/>
     /// By default the cache will use <see cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/>
-    /// unless another implementation of <see cref="ITextCache"/> is provided.
+    /// unless another implementation of <see cref="ITypedCache"/> is provided.
     /// </summary>
     public static IServiceCollection AddMethodCaching(this IServiceCollection services)
     {
@@ -48,6 +49,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMethodCacheOptionsLookup, MethodCacheOptionsLookup>();
         // TODO: Document why ProxyGenerator added as singleton w/ link to Castle docs
         services.AddSingleton<IProxyGenerator, ProxyGenerator>();
+        services.AddTransient<ICacheExpirationService, CacheExpirationService>();
+        // Default cache policy can be replaced
+        services.TryAddTransient<IDefaultCachePolicyService, HardCodedDefaultCachePolicy>();
         return services;
     }
 

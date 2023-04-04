@@ -33,8 +33,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddLocalFileTextCache(this IServiceCollection services,
                                                            Action<LocalFileCacheOptions> configureLocalFileCacheOptions)
     {
-        services.AddTransient<ICacheExpirationService, CacheExpirationService>();
-        services.AddTransient<IDefaultCachePolicyService, HardCodedDefaultCachePolicy>();
         services.AddTransient<ITextCache, LocalFileCache>();
         // IMPORTANT: If the serialization format is changed then the cache and any other persisted files will break
         services.AddTransient<ITypedCache, JsonTypedCache>();
