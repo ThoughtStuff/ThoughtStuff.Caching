@@ -79,7 +79,7 @@ public class CachingInterceptorTest
     [Theory(DisplayName = "Caching: Interceptor Sync Return Cached Result"), CacheTest]
     public void ReturnCachedSyncResult(int expected,
                                        int notExpected,
-                                       JsonCache cache)
+                                       JsonTypedCache cache)
     {
         var service = MakeProxyService(cache);
         service.SetOperationResult(expected);
@@ -115,7 +115,7 @@ public class CachingInterceptorTest
     [Theory(DisplayName = "Caching: Interceptor Async Return Cached Result"), CacheTest]
     public async Task ReturnCachedAsyncResult(int expected,
                                               int notExpected,
-                                              JsonCache cache)
+                                              JsonTypedCache cache)
     {
         var service = MakeProxyService(cache);
         service.SetOperationResult(expected);

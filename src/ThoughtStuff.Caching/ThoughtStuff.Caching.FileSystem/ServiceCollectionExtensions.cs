@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Configures <see cref="JsonCache"/> as <see cref="ITypedCache"/>
+    /// Configures <see cref="JsonTypedCache"/> as <see cref="ITypedCache"/>
     /// so that it will supersede the default in-memory <see cref="ITypedCache"/>
     /// configured in AddMethodCaching.
     /// Also configures a <see cref="LocalFileCache"/> as <see cref="ITextCache"/>
@@ -24,7 +24,7 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Configures <see cref="JsonCache"/> as <see cref="ITypedCache"/>
+    /// Configures <see cref="JsonTypedCache"/> as <see cref="ITypedCache"/>
     /// so that it will supersede the default in-memory <see cref="ITypedCache"/>
     /// configured in AddMethodCaching.
     /// Also configures a <see cref="LocalFileCache"/> as <see cref="ITextCache"/>
@@ -37,7 +37,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IDefaultCachePolicyService, HardCodedDefaultCachePolicy>();
         services.AddTransient<ITextCache, LocalFileCache>();
         // IMPORTANT: If the serialization format is changed then the cache and any other persisted files will break
-        services.AddTransient<ITypedCache, JsonCache>();
+        services.AddTransient<ITypedCache, JsonTypedCache>();
         services.AddTransient<IObjectFileSerializer, JsonFileSerializer>();
         services.Configure(configureLocalFileCacheOptions);
         return services;

@@ -33,7 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IBlobStorageService, BlobStorageService>();
         services.AddTransient<IObjectDictionaryConverter, ObjectDictionaryConverter>();
         services.AddTransient<ITextCache, AzureBlobTextCache>();
-        services.AddTransient<ITypedCache, JsonCache>();
+        services.AddTransient<ITypedCache, JsonTypedCache>();
         services.AddTransient<ICacheExpirationService, CacheExpirationService>();
         services.AddTransient<IDefaultCachePolicyService, HardCodedDefaultCachePolicy>();
         services.AddTransient<IZipArchiveBlobStorage, ZipArchiveBlobStorage>();

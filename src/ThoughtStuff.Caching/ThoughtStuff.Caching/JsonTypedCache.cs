@@ -11,11 +11,11 @@ namespace ThoughtStuff.Caching;
 /// <summary>
 /// Wraps a <see cref="ITextCache"/> and uses JSON to serialize objects into and out of the <see cref="ITextCache"/>.
 /// </summary>
-public class JsonCache : ITypedCache
+public class JsonTypedCache : ITypedCache
 {
     private readonly ITextCache textCache;
 
-    public JsonCache(ITextCache textCache)
+    public JsonTypedCache(ITextCache textCache)
     {
         this.textCache = textCache ?? throw new ArgumentNullException(nameof(textCache));
     }
