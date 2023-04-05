@@ -61,6 +61,7 @@ public class CachingInterceptor<T> : IInterceptor
             if (cache.Contains(cacheKey))
             {
                 GetResultFromCache(invocation, isAsync, cacheKey);
+                // TODO: Must Release if prior 2 lines throw an exception
                 cacheLock.Release();
                 return;
             }
@@ -91,22 +92,41 @@ public class CachingInterceptor<T> : IInterceptor
 
     private void ProceedAndSetResultInCache(IInvocation invocation, bool isAsync, string cacheKey, SemaphoreSlim cacheLock)
     {
-        // Call through to the underlying implementation
-        invocation.Proceed();
-        // Then save the result in cache
         if (isAsync)
         {
-            var task = (Task<T>)invocation.ReturnValue;
-            task.ConfigureAwait(false);
-            // TODO: Prevent process from exiting before this continuation gets run
-            // https://docs.microsoft.com/en-us/dotnet/architecture/microservices/multi-container-microservice-net-applications/background-tasks-with-ihostedservice#registering-hosted-services-in-your-webhost-or-host
-            task.ContinueWith(t => SetResultInCache(invocation, cacheKey, t))
-                .ContinueWith(_ => cacheLock.Release());
+            // Initiate the underlying implementation
+            invocation.Proceed();
+            // Wrap the underlying task with a new task that will handle caching as well
+            var workTask = (Task<T>)invocation.ReturnValue;
+            invocation.ReturnValue = Task.Run(async () =>
+            {
+                try
+                {
+                    // Wait for the underlying operation
+                    await workTask;
+                    // Then save the result in cache
+                    SetResultInCache(invocation, cacheKey, workTask);
+                    return workTask.Result;
+                }
+                finally
+                {
+                    cacheLock.Release();
+                }
+            });
         }
         else
         {
-            SetResultInCache(invocation, cacheKey, (T)invocation.ReturnValue);
-            cacheLock.Release();
+            try
+            {
+                // Call through to the underlying implementation
+                invocation.Proceed();
+                // Then save the result in cache
+                SetResultInCache(invocation, cacheKey, (T)invocation.ReturnValue);
+            }
+            finally
+            {
+                cacheLock.Release();
+            }
         }
     }
 

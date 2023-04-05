@@ -48,6 +48,22 @@ public class CachingInterceptorTest
             return operationResult;
         }
 
+        public virtual int ThrowingOperation()
+        {
+            Interlocked.Increment(ref _calls);
+            // Insert a delay to simulate an operation
+            Thread.Sleep(50);
+            throw new Exception("Expected exception");
+        }
+
+        public virtual async Task<int> ThrowingOperationAsync()
+        {
+            Interlocked.Increment(ref _calls);
+            // Insert a delay to simulate an async operation
+            await Task.Delay(50);
+            throw new Exception("Expected exception");
+        }
+
         public virtual void VoidMethod() => VoidMethodCalled = true;
 
         public void SetOperationResult(int count)
@@ -185,5 +201,57 @@ public class CachingInterceptorTest
         await Task.WhenAll(calls);
         results.Should().OnlyContain(x => x == expected);
         service.Calls.Should().Be(1);
+    }
+
+    [Theory(DisplayName = "Caching: Concurrent Sync: Avoids deadlock when underlying operation throws"), CacheTest]
+    public void ConcurrentSyncThrowing(int expected,
+                                       JsonTypedCache cache)
+    {
+        const int count = 5;
+        var service = MakeProxyService(cache);
+        service.SetOperationResult(expected);
+
+        var results = new int[count];
+        var calls = Enumerable.Range(0, count)
+                              .Select(i => new Action(() => results[i] = service.ThrowingOperation()))
+                              .ToArray();
+        var testTask = Task.Run(() =>
+        {
+            try
+            {
+                Parallel.Invoke(calls);
+            }
+            catch (Exception)
+            {
+            }
+        });
+        var completedInTime = testTask.Wait(2000);
+        completedInTime.Should().BeTrue();
+        service.Calls.Should().Be(count);
+    }
+
+    [Theory(DisplayName = "Caching: Concurrent Async: Avoids deadlock when underlying operation throws"), CacheTest]
+    public void ConcurrentAsyncThrowing(int expected,
+                                       JsonTypedCache cache)
+    {
+        const int count = 5;
+        var service = MakeProxyService(cache);
+        service.SetOperationResult(expected);
+
+        var results = new int[count];
+        var calls = Enumerable.Range(0, count)
+                              .Select(i => Task.Run(async () => results[i] = await service.ThrowingOperationAsync()))
+                              .ToArray();
+        bool? completedInTime = null;
+        try
+        {
+            var testTask = Task.WhenAll(calls);
+            completedInTime = testTask.Wait(2000);
+        }
+        catch (AggregateException)
+        {
+        }
+        completedInTime.Should().NotBeFalse();
+        service.Calls.Should().Be(count);
     }
 }
