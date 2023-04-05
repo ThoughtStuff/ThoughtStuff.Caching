@@ -26,18 +26,23 @@ public class CachingInterceptorTest
     public class TestService
     {
         private int operationResult = 42;
-        public int Calls { get; private set; }
+
+        private int _calls;
+        public int Calls { get => _calls; }
+
         public bool VoidMethodCalled { get; private set; }
 
         public virtual int BlockingOperation()
         {
-            ++Calls;
+            Interlocked.Increment(ref _calls);
+            // Insert a delay to simulate an operation
+            Thread.Sleep(50);
             return operationResult;
         }
 
         public virtual async Task<int> AsyncOperation()
         {
-            ++Calls;
+            Interlocked.Increment(ref _calls);
             // Insert a delay to simulate an async operation
             await Task.Delay(50);
             return operationResult;
@@ -57,7 +62,8 @@ public class CachingInterceptorTest
         var methodCacheKeyGenerator = new MethodCacheKeyGenerator();
         var logger = Mock.Of<ILogger<IMethodCacheOptionsLookup>>();
         var methodCacheOptionsLookup = new MethodCacheOptionsLookup(logger);
-        var cachingInterceptor = new CachingInterceptor<int>(methodCacheKeyGenerator, methodCacheOptionsLookup, cache);
+        var cacheLockProvider = new CacheLockProvider();
+        var cachingInterceptor = new CachingInterceptor<int>(methodCacheKeyGenerator, methodCacheOptionsLookup, cache, cacheLockProvider);
         var proxyGenerator = new ProxyGenerator();
         var proxyService = proxyGenerator.CreateClassProxy<TestService>(cachingInterceptor);
         return proxyService;
@@ -145,5 +151,39 @@ public class CachingInterceptorTest
 
         //cache.Verify(c => c.Set(It.IsAny<string>(), 42, It.IsAny<DistributedCacheEntryOptions>()));
         service.VoidMethodCalled.Should().BeTrue();
+    }
+
+    [Theory(DisplayName = "Caching: Concurrent Sync: Prevent multiple threads calling underlying operation"), CacheTest]
+    public void ConcurrentSync(int expected,
+                               JsonTypedCache cache)
+    {
+        const int count = 10;
+        var service = MakeProxyService(cache);
+        service.SetOperationResult(expected);
+
+        var results = new int[count];
+        var calls = Enumerable.Range(0, count)
+                              .Select(i => new Action(() => results[i] = service.BlockingOperation()))
+                              .ToArray();
+        Parallel.Invoke(calls);
+        results.Should().OnlyContain(x => x == expected);
+        service.Calls.Should().Be(1);
+    }
+
+    [Theory(DisplayName = "Caching: Concurrent Async: Prevent multiple threads calling underlying async operation"), CacheTest]
+    public async Task ConcurrentAsync(int expected,
+                                      JsonTypedCache cache)
+    {
+        const int count = 10;
+        var service = MakeProxyService(cache);
+        service.SetOperationResult(expected);
+
+        var results = new int[count];
+        var calls = Enumerable.Range(0, count)
+                              .Select(i => Task.Run(async () => results[i] = await service.AsyncOperation()))
+                              .ToArray();
+        await Task.WhenAll(calls);
+        results.Should().OnlyContain(x => x == expected);
+        service.Calls.Should().Be(1);
     }
 }

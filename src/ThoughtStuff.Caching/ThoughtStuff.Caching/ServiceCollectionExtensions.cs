@@ -49,6 +49,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMethodCacheOptionsLookup, MethodCacheOptionsLookup>();
         // TODO: Document why ProxyGenerator added as singleton w/ link to Castle docs
         services.AddSingleton<IProxyGenerator, ProxyGenerator>();
+        // CacheLockProvider must be singleton because it holds a collection of locks
+        services.AddSingleton<ICacheLockProvider, CacheLockProvider>();
         services.AddTransient<ICacheExpirationService, CacheExpirationService>();
         // Default cache policy can be replaced
         services.TryAddTransient<IDefaultCachePolicyService, HardCodedDefaultCachePolicy>();

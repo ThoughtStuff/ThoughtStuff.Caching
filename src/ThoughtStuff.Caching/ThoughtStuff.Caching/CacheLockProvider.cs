@@ -5,7 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 namespace ThoughtStuff.Caching;
 
 /// <summary>
-/// Must be used as a Singleton.
+/// Must be used as a Singleton because it holds a collection of locks.
 /// </summary>
 public class CacheLockProvider : ICacheLockProvider
 {

@@ -42,7 +42,7 @@ public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCa
 
         var keys = cacheManager.EnumerateKeys().ToEnumerable();
 
-        keys.Should().Equal(expected);
+        keys.Should().BeEquivalentTo(expected);
     }
 
     [Theory(DisplayName = "Caching Mgmt: Matching Entry Count"), CacheTest]

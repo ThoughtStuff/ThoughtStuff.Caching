@@ -2,6 +2,7 @@
 // Licensed under the ThoughtStuff, LLC Split License.
 
 using Microsoft.Extensions.Caching.Distributed;
+using System.Collections.Concurrent;
 
 namespace ThoughtStuff.Caching;
 
@@ -10,7 +11,7 @@ namespace ThoughtStuff.Caching;
 /// </summary>
 public class DictionaryTextCache : ITextCache, IManagedCache
 {
-    private readonly Dictionary<string, Entry> dictionary = new();
+    private readonly ConcurrentDictionary<string, Entry> dictionary = new();
     private readonly ICacheExpirationService cacheExpirationService;
 
     public DictionaryTextCache(ICacheExpirationService cacheExpirationService)
@@ -27,7 +28,7 @@ public class DictionaryTextCache : ITextCache, IManagedCache
         var entry = dictionary[key];
         if (cacheExpirationService.IsExpired(entry.Options, entry.Updated))
         {
-            dictionary.Remove(key);
+            dictionary.TryRemove(key, out _);
             return false;
         }
         return true;
@@ -37,7 +38,7 @@ public class DictionaryTextCache : ITextCache, IManagedCache
     public string GetLocation(string key) => key;
 
     /// <inheritdoc/>
-    public void Remove(string key) => dictionary.Remove(key);
+    public void Remove(string key) => dictionary.TryRemove(key, out _);
 
     /// <inheritdoc/>
     public string? GetString(string key) =>

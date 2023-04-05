@@ -11,14 +11,17 @@ public class CachingInterceptor<T> : IInterceptor
     private readonly IMethodCacheKeyGenerator methodCacheKeyGenerator;
     private readonly IMethodCacheOptionsLookup methodCacheOptionsLookup;
     private readonly ITypedCache cache;
+    private readonly ICacheLockProvider cacheLockProvider;
 
     public CachingInterceptor(IMethodCacheKeyGenerator methodCacheKeyGenerator,
                               IMethodCacheOptionsLookup methodCacheOptionsLookup,
-                              ITypedCache cache)
+                              ITypedCache cache,
+                              ICacheLockProvider cacheLockProvider)
     {
         this.methodCacheKeyGenerator = methodCacheKeyGenerator ?? throw new ArgumentNullException(nameof(methodCacheKeyGenerator));
         this.methodCacheOptionsLookup = methodCacheOptionsLookup ?? throw new ArgumentNullException(nameof(methodCacheOptionsLookup));
         this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        this.cacheLockProvider = cacheLockProvider ?? throw new ArgumentNullException(nameof(cacheLockProvider));
     }
 
     public void Intercept(IInvocation invocation)
@@ -45,27 +48,51 @@ public class CachingInterceptor<T> : IInterceptor
         var cacheKey = methodCacheKeyGenerator.GetCacheKey(invocation.Method, invocation.Arguments);
         if (cache.Contains(cacheKey))
         {
-            T? result;
-            try
-            {
-                result = cache.Get<T>(cacheKey);
-            }
-            catch (Exception cacheException)
-            {
-                var cacheLocation = cache.GetLocation(cacheKey);
-                throw new Exception($"Failure fetching cache entry at cache location: '{cacheLocation}'", cacheException);
-            }
-            if (result.IsDefault())
-                throw new InvalidOperationException($"Key '{cacheKey}' was present in cache '{cache}', but value was default.");
-            if (isAsync)
-                invocation.ReturnValue = Task.FromResult(result);
-            else
-                invocation.ReturnValue = result;
+            GetResultFromCache(invocation, isAsync, cacheKey);
             return;
         }
+        // Prevent multiple attempts to call underlying implementation
+        // by using a lock based on the cache key
+        var cacheLock = cacheLockProvider.GetCacheLockObject(cacheKey);
+        lock (cacheLock)
+        {
+            // Once we get the lock it doesn't mean that we were the first
+            // We might be the 2nd..., so check the cache again
+            if (cache.Contains(cacheKey))
+            {
+                GetResultFromCache(invocation, isAsync, cacheKey);
+                return;
+            }
+            ProceedAndSetResultInCache(invocation, isAsync, cacheKey);
+        }
+    }
 
+    private void GetResultFromCache(IInvocation invocation, bool isAsync, string cacheKey)
+    {
+        T? result;
+        try
+        {
+            result = cache.Get<T>(cacheKey);
+        }
+        catch (Exception cacheException)
+        {
+            var cacheLocation = cache.GetLocation(cacheKey);
+            throw new Exception($"Failure fetching cache entry at cache location: '{cacheLocation}'", cacheException);
+        }
+        if (result.IsDefault())
+            throw new InvalidOperationException($"Key '{cacheKey}' was present in cache '{cache}', but value was default.");
+        if (isAsync)
+            invocation.ReturnValue = Task.FromResult(result);
+        else
+            invocation.ReturnValue = result;
+        return;
+    }
+
+    private void ProceedAndSetResultInCache(IInvocation invocation, bool isAsync, string cacheKey)
+    {
+        // Call through to the underlying implementation
         invocation.Proceed();
-
+        // Then save the result in cache
         if (isAsync)
         {
             var task = (Task<T>)invocation.ReturnValue;

@@ -1,15 +1,16 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
+using System.Collections.Concurrent;
 using static ThoughtStuff.Caching.Core.StringUtilities;
 
 namespace ThoughtStuff.Caching;
 
 public class DictionaryTextCacheManager : ICacheManager
 {
-    private readonly Dictionary<string, DictionaryTextCache.Entry> dictionary;
+    private readonly ConcurrentDictionary<string, DictionaryTextCache.Entry> dictionary;
 
-    internal DictionaryTextCacheManager(Dictionary<string, DictionaryTextCache.Entry> dictionary)
+    internal DictionaryTextCacheManager(ConcurrentDictionary<string, DictionaryTextCache.Entry> dictionary)
     {
         this.dictionary = dictionary;
     }
@@ -35,7 +36,7 @@ public class DictionaryTextCacheManager : ICacheManager
         var count = 0;
         foreach (var key in matchingKeys)
         {
-            dictionary.Remove(key);
+            dictionary.TryRemove(key, out _);
             ++count;
         }
         return Task.FromResult(count);
