@@ -45,4 +45,19 @@ public class CacheLockProviderTest
         // Assert
         lockObjects.Should().OnlyContain(obj => obj == lockObjects[0]);
     }
+
+    [Theory(DisplayName = "Return Different Object for Expired Key"), AutoMoq]
+    public async Task ExpiredKey(string key)
+    {
+        // Arrange
+        var cacheLockProvider = CacheLockProvider.WithExpiration(TimeSpan.FromSeconds(2));
+
+        // Act
+        var lockObject1 = cacheLockProvider.GetCacheLockObject(key);
+        await Task.Delay(TimeSpan.FromSeconds(3)); // wait for lock to expire
+        var lockObject2 = cacheLockProvider.GetCacheLockObject(key);
+
+        // Assert
+        lockObject1.Should().NotBeSameAs(lockObject2);
+    }
 }
