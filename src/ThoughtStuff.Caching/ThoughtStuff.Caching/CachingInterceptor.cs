@@ -54,16 +54,17 @@ public class CachingInterceptor<T> : IInterceptor
         // Prevent multiple attempts to call underlying implementation
         // by using a lock based on the cache key
         var cacheLock = cacheLockProvider.GetCacheLockObject(cacheKey);
-        lock (cacheLock)
+        cacheLock.Wait();
         {
             // Once we get the lock it doesn't mean that we were the first
             // We might be the 2nd..., so check the cache again
             if (cache.Contains(cacheKey))
             {
                 GetResultFromCache(invocation, isAsync, cacheKey);
+                cacheLock.Release();
                 return;
             }
-            ProceedAndSetResultInCache(invocation, isAsync, cacheKey);
+            ProceedAndSetResultInCache(invocation, isAsync, cacheKey, cacheLock);
         }
     }
 
@@ -88,7 +89,7 @@ public class CachingInterceptor<T> : IInterceptor
         return;
     }
 
-    private void ProceedAndSetResultInCache(IInvocation invocation, bool isAsync, string cacheKey)
+    private void ProceedAndSetResultInCache(IInvocation invocation, bool isAsync, string cacheKey, SemaphoreSlim cacheLock)
     {
         // Call through to the underlying implementation
         invocation.Proceed();
@@ -99,11 +100,13 @@ public class CachingInterceptor<T> : IInterceptor
             task.ConfigureAwait(false);
             // TODO: Prevent process from exiting before this continuation gets run
             // https://docs.microsoft.com/en-us/dotnet/architecture/microservices/multi-container-microservice-net-applications/background-tasks-with-ihostedservice#registering-hosted-services-in-your-webhost-or-host
-            task.ContinueWith(t => SetResultInCache(invocation, cacheKey, t));
+            task.ContinueWith(t => SetResultInCache(invocation, cacheKey, t))
+                .ContinueWith(_ => cacheLock.Release());
         }
         else
         {
             SetResultInCache(invocation, cacheKey, (T)invocation.ReturnValue);
+            cacheLock.Release();
         }
     }
 

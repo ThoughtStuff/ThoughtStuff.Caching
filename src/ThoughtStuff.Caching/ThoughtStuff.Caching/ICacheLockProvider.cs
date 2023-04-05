@@ -6,10 +6,11 @@ namespace ThoughtStuff.Caching;
 public interface ICacheLockProvider
 {
     /// <summary>
-    /// Returns a lock object that is suitable to use when updating a cache entry.
-    /// That is, it returns the same object for the same key, and different objects for different keys.
+    /// Returns a <see cref="SemaphoreSlim"/> mutex object that is suitable to use when
+    /// invoking an underlying provider in order to update a cache entry.
+    /// That is, it returns the same semaphore for the same key, and different semaphores for different keys.
     /// <para/>
-    /// Thread safe: Concurrent calls with the same key will get the same lock object.
+    /// Thread safe: Concurrent calls with the same key will get the same semaphore.
     /// </summary>
-    object GetCacheLockObject(string key);
+    SemaphoreSlim GetCacheLockObject(string key);
 }

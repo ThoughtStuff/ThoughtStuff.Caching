@@ -23,14 +23,14 @@ public class CacheLockProvider : ICacheLockProvider
     public CacheLockProvider() : this(DefaultExpiration) { }
 
     /// <inheritdoc/>
-    public object GetCacheLockObject(string key)
+    public SemaphoreSlim GetCacheLockObject(string key)
     {
         lock (lockObject)
         {
             return cache.GetOrCreate(key, entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = expiration;
-                return new object();
+                return new SemaphoreSlim(1);
             });
         }
     }
