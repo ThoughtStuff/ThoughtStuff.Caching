@@ -58,14 +58,23 @@ public class CachingInterceptor<T> : IInterceptor
         {
             // Once we get the lock it doesn't mean that we were the first
             // We might be the 2nd..., so check the cache again
-            if (cache.Contains(cacheKey))
+            // Being sure to release the lock in any (error) scenario
+            bool resultInCache;
+            try
             {
-                GetResultFromCache(invocation, isAsync, cacheKey);
-                // TODO: Must Release if prior 2 lines throw an exception
-                cacheLock.Release();
-                return;
+                resultInCache = cache.Contains(cacheKey);
+                if (resultInCache)
+                    cacheLock.Release();
             }
-            ProceedAndSetResultInCache(invocation, isAsync, cacheKey, cacheLock);
+            catch
+            {
+                cacheLock.Release();
+                throw;
+            }
+            if (resultInCache)
+                GetResultFromCache(invocation, isAsync, cacheKey);
+            else
+                ProceedAndSetResultInCache(invocation, isAsync, cacheKey, cacheLock);
         }
     }
 

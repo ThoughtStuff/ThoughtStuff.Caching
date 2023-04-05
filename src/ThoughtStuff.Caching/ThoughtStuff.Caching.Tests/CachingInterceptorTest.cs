@@ -254,4 +254,45 @@ public class CachingInterceptorTest
         completedInTime.Should().NotBeFalse();
         service.Calls.Should().Be(count);
     }
+
+    [Theory(DisplayName = "Caching: Avoids deadlock when 2nd Contains check fails"), CacheTest]
+    public void SecondContainsFails(Mock<ITypedCache> cache)
+    {
+        const int count = 5;
+        // This sequence makes it likely that the 2nd check for cache.Contains
+        // (after the lock has been obtained)
+        // will throw for one of the invocations
+        cache.SetupSequence(x => x.Contains(It.IsAny<string>()))
+             .Returns(false)
+             .Returns(false)
+             .Returns(false)
+             .Returns(false)
+             .Returns(false)
+             .Throws<InvalidOperationException>()
+             .Throws<InvalidOperationException>()
+             .Throws<InvalidOperationException>()
+             .Throws<InvalidOperationException>()
+             .Throws<InvalidOperationException>();
+        var service = MakeProxyService(cache.Object);
+
+        var results = new int[count];
+        var calls = Enumerable.Range(0, count)
+                              .Select(i => new Action(() => results[i] = service.BlockingOperation()))
+                              .ToArray();
+        var testTask = Task.Run(() =>
+        {
+            try
+            {
+                Parallel.Invoke(calls);
+            }
+            catch (AggregateException aggregate)
+            {
+                // The exception should be propagated
+                aggregate.InnerExceptions.Should().AllBeOfType<InvalidOperationException>();
+            }
+        });
+        // The exception should not cause a deadlock
+        var completedInTime = testTask.Wait(2000);
+        completedInTime.Should().BeTrue();
+    }
 }
