@@ -103,7 +103,7 @@ public class CachingInterceptor<T> : IInterceptor
     {
         if (isAsync)
         {
-            // Initiate the underlying implementation
+            // Initiate the underlying async implementation
             invocation.Proceed();
             // Wrap the underlying task with a new task that will handle caching as well
             var workTask = (Task<T>)invocation.ReturnValue;
@@ -114,7 +114,7 @@ public class CachingInterceptor<T> : IInterceptor
                     // Wait for the underlying operation
                     await workTask;
                     // Then save the result in cache
-                    SetResultInCache(invocation, cacheKey, workTask);
+                    SetResultInCache(invocation, cacheKey, workTask.Result);
                     return workTask.Result;
                 }
                 finally
@@ -137,14 +137,6 @@ public class CachingInterceptor<T> : IInterceptor
                 cacheLock.Release();
             }
         }
-    }
-
-    private void SetResultInCache(IInvocation invocation, string cacheKey, Task<T> task)
-    {
-        if (task.Status != TaskStatus.RanToCompletion)
-            return;
-        T result = task.Result;
-        SetResultInCache(invocation, cacheKey, result);
     }
 
     private void SetResultInCache(IInvocation invocation, string cacheKey, T result)
