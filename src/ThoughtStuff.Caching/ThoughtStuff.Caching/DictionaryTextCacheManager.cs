@@ -1,6 +1,3 @@
-// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
 using System.Collections.Concurrent;
 using static ThoughtStuff.Caching.Core.StringUtilities;
 

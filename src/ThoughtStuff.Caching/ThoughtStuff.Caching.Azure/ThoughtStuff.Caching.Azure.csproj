@@ -10,8 +10,7 @@
     <Company>ThoughtStuff, LLC</Company>
     <PackageProjectUrl>https://github.com/ThoughtStuff/ThoughtStuff.Caching</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ThoughtStuff/ThoughtStuff.Caching.git</RepositoryUrl>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageReadmeFile>README.md</PackageReadmeFile>

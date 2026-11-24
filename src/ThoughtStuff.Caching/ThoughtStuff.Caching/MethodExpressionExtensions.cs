@@ -1,7 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace ThoughtStuff.Caching;
 

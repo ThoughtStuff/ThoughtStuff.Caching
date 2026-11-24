@@ -1,6 +1,3 @@
-// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ThoughtStuff.Caching.Example.Pages;

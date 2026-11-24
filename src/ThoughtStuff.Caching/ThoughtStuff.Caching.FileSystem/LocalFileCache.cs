@@ -1,6 +1,3 @@
-// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
 #if NETSTANDARD2_0
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 #pragma warning disable CS8603 // Possible null reference return.

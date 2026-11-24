@@ -1,7 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
-using System.IO.Compression;
+﻿using System.IO.Compression;
 
 namespace ThoughtStuff.Caching.Azure;
 

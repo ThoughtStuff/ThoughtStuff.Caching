@@ -1,7 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
-using Castle.DynamicProxy;
+﻿using Castle.DynamicProxy;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace ThoughtStuff.Caching;

@@ -1,6 +1,3 @@
-// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
 using Microsoft.Extensions.Configuration;
 using ThoughtStuff.Caching;
 using ThoughtStuff.Caching.Azure;

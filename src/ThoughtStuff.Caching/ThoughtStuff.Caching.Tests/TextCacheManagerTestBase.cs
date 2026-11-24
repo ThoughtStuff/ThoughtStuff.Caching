@@ -1,6 +1,3 @@
-// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
 namespace ThoughtStuff.Caching.Tests;
 
 public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCache, ITextCache

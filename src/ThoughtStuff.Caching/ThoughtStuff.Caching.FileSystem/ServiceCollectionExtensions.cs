@@ -1,6 +1,3 @@
-// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
 using ThoughtStuff.Caching;
 using ThoughtStuff.Caching.FileSystem;
 

@@ -1,7 +1,4 @@
-﻿// Copyright (c) ThoughtStuff, LLC.
-// Licensed under the ThoughtStuff, LLC Split License.
-
-namespace ThoughtStuff.Caching.Tests.Testing;
+﻿namespace ThoughtStuff.Caching.Tests.Testing;
 
 /// <summary>
 /// HttpClient cannot be mocked, but the message handler can be replaced
