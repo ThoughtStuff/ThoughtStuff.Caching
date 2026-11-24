@@ -1,0 +1,47 @@
+name: Build and test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  BUILD_CONFIGURATION: ${{ vars.BUILD_CONFIGURATION || 'Release' }}
+  DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/ThoughtStuff.Caching
+    services:
+      azurite:
+        image: mcr.microsoft.com/azure-storage/azurite:3.38.0
+        ports:
+          - '127.0.0.1:10000:10000'
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@v6
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build solution
+        run: dotnet build ThoughtStuff.Caching.slnx --configuration "$BUILD_CONFIGURATION"
+
+      - name: Wait for Azurite
+        run: >-
+          curl --silent --show-error --retry 15 --retry-connrefused --retry-delay 1
+          --max-time 2 --output /dev/null http://127.0.0.1:10000/devstoreaccount1
+
+      - name: Run tests
+        run: dotnet test ThoughtStuff.Caching.slnx --configuration "$BUILD_CONFIGURATION" --no-build
