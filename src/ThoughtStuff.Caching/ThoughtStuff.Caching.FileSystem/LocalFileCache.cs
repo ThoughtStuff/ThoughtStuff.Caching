@@ -48,7 +48,7 @@ public class LocalFileCache : ITextCache, IManagedCache
     /// <summary>
     /// Find a candidate directory in the local system environment that is appropriate to use for app file cache
     /// <para/>
-    /// Looks for environment vairables related to UserProfiles, AppData, and Temp.
+    /// Looks for environment variables related to UserProfiles, AppData, and Temp.
     /// <para/>
     /// DOES NOT CHECK IF DIRECTORY EXISTS OR HAS CACHE ENTRIES.
     /// </summary>
@@ -88,12 +88,11 @@ public class LocalFileCache : ITextCache, IManagedCache
     {
         var valuePath = GetFilePath(key);
         var updatedTime = new DateTimeOffset(File.GetLastWriteTimeUtc(valuePath));
-        var metadataPath = GetMetadataPath(key);
+        var metadataPath = GetMetadataPath(valuePath);
         var isExpired = IsExpired(metadataPath, updatedTime);
         if (!isExpired)
             return File.Exists(valuePath);
-        Delete(valuePath);
-        Delete(metadataPath);
+        RemoveEntryFiles(valuePath);
         return false;
     }
 
@@ -103,8 +102,14 @@ public class LocalFileCache : ITextCache, IManagedCache
         if (!Contains(key))
             return null;
         var valuePath = GetFilePath(key);
-        return WithRetry().Execute(() =>
-            File.ReadAllText(valuePath));
+        try
+        {
+            return WithRetry(retryMissingFiles: false).Execute(() => File.ReadAllText(valuePath));
+        }
+        catch (IOException exception) when (IsMissingFile(exception))
+        {
+            return null;
+        }
     }
 
     /// <inheritdoc/>
@@ -121,20 +126,13 @@ public class LocalFileCache : ITextCache, IManagedCache
         {
             CacheEntryOptions = options
         };
-        var metadataPath = GetMetadataPath(key);
+        var metadataPath = GetMetadataPath(GetFilePath(key));
         WithRetry().Execute(() =>
             objectFileSerializer.SerializeToFile(metadataPath, metadata));
     }
 
     /// <inheritdoc/>
-    public void Remove(string key)
-    {
-        var valuePath = GetFilePath(key);
-        Delete(valuePath);
-        // TODO: Unit test that catches if we don't delete the metadata
-        var metadataPath = GetMetadataPath(key);
-        Delete(metadataPath);
-    }
+    public void Remove(string key) => RemoveEntryFiles(GetFilePath(key));
 
     /// <inheritdoc/>
     public ICacheManager GetCacheManager()
@@ -149,14 +147,14 @@ public class LocalFileCache : ITextCache, IManagedCache
         {
             if (File.Exists(metadataPath))
             {
-                metadata = WithRetry().Execute(() =>
+                metadata = WithRetry(retryMissingFiles: false).Execute(() =>
                     objectFileSerializer.DeserializeFromFile<LocalFileCacheMetadata>(metadataPath));
             }
-            // If the file does not exist, pass null cache entry options which will 
+            // If the file does not exist, pass null cache entry options which will
             // cause a default cache policy to be used.
             return cacheExpirationService.IsExpired(metadata?.CacheEntryOptions, updatedTime);
         }
-        catch (FileNotFoundException)
+        catch (IOException exception) when (IsMissingFile(exception))
         {
             // If the meta file existed, and then was not found while being deserialized
             // Assume another thread is updating it
@@ -164,8 +162,13 @@ public class LocalFileCache : ITextCache, IManagedCache
         }
     }
 
-    private string GetMetadataPath(string key) =>
-        GetFilePath(key, extension: "meta");
+    private static string GetMetadataPath(string valuePath) => Path.ChangeExtension(valuePath, ".meta");
+
+    internal void RemoveEntryFiles(string valuePath)
+    {
+        Delete(valuePath);
+        Delete(GetMetadataPath(valuePath));
+    }
 
     internal string GetFilePath(string key, string extension = "txt")
     {
@@ -214,12 +217,15 @@ public class LocalFileCache : ITextCache, IManagedCache
             File.Delete(valuePath));
     }
 
-    private static RetryPolicy WithRetry()
+    private static bool IsMissingFile(IOException exception) =>
+        exception is FileNotFoundException or DirectoryNotFoundException;
+
+    private static RetryPolicy WithRetry(bool retryMissingFiles = true)
     {
         // https://github.com/App-vNext/Polly/wiki/Retry
         return Policy
             .Handle<UnauthorizedAccessException>()
-            .Or<IOException>()
+            .Or<IOException>(exception => retryMissingFiles || !IsMissingFile(exception))
             .WaitAndRetry(new[]
               {
                 TimeSpan.FromMilliseconds(Random.Next(250)),

@@ -44,44 +44,70 @@ public class CachingInterceptor<T> : IInterceptor
 
         // Castle's array may contain nulls, which the built-in key generator handles.
         var cacheKey = methodCacheKeyGenerator.GetCacheKey(invocation.Method, (object[])invocation.Arguments);
-        if (cache.Contains(cacheKey))
-        {
-            GetResultFromCache(invocation, isAsync, cacheKey);
+        if (TryGetResultFromCache(invocation, isAsync, cacheKey))
             return;
-        }
+
         // Prevent multiple attempts to call underlying implementation
         // by using a lock based on the cache key
         var cacheLock = cacheLockProvider.GetCacheLockObject(cacheKey);
         cacheLock.Wait();
+        var releaseLock = true;
+        try
         {
-            // Once we get the lock it doesn't mean that we were the first
-            // We might be the 2nd..., so check the cache again
-            // Being sure to release the lock in any (error) scenario
-            bool resultInCache;
-            try
+            // Another caller may have filled the cache while we waited.
+            if (TryGetResultFromCache(invocation, isAsync, cacheKey))
+                return;
+
+            invocation.Proceed();
+            if (isAsync)
             {
-                resultInCache = cache.Contains(cacheKey);
-                if (resultInCache)
-                    cacheLock.Release();
+                var workTask = (Task<T>)invocation.ReturnValue!;
+                var cachedTask = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var result = await workTask;
+                        SetResultInCache(invocation, cacheKey, result);
+                        return result;
+                    }
+                    finally
+                    {
+                        cacheLock.Release();
+                    }
+                });
+                releaseLock = false;
+                invocation.ReturnValue = cachedTask;
             }
-            catch
-            {
-                cacheLock.Release();
-                throw;
-            }
-            if (resultInCache)
-                GetResultFromCache(invocation, isAsync, cacheKey);
             else
-                ProceedAndSetResultInCache(invocation, isAsync, cacheKey, cacheLock);
+            {
+                SetResultInCache(invocation, cacheKey, (T)invocation.ReturnValue!);
+            }
+        }
+        finally
+        {
+            if (releaseLock)
+                cacheLock.Release();
         }
     }
 
-    private void GetResultFromCache(IInvocation invocation, bool isAsync, string cacheKey)
+    private bool TryGetResultFromCache(IInvocation invocation, bool isAsync, string cacheKey)
     {
+        if (!cache.Contains(cacheKey))
+            return false;
+
+        var jsonCache = cache as JsonTypedCache;
         T? result;
         try
         {
-            result = cache.Get<T>(cacheKey);
+            if (jsonCache is not null)
+            {
+                if (!jsonCache.TryGet(cacheKey, out result))
+                    return false;
+            }
+            else
+            {
+                result = cache.Get<T>(cacheKey);
+            }
         }
         catch (Exception cacheException)
         {
@@ -89,52 +115,17 @@ public class CachingInterceptor<T> : IInterceptor
             throw new Exception($"Failure fetching cache entry at cache location: '{cacheLocation}'", cacheException);
         }
         if (result.IsDefault())
+        {
+            // Other typed caches report a miss by returning default.
+            if (jsonCache is null && !cache.Contains(cacheKey))
+                return false;
             throw new InvalidOperationException($"Key '{cacheKey}' was present in cache '{cache}', but value was default.");
+        }
         if (isAsync)
             invocation.ReturnValue = Task.FromResult(result);
         else
             invocation.ReturnValue = result;
-        return;
-    }
-
-    private void ProceedAndSetResultInCache(IInvocation invocation, bool isAsync, string cacheKey, SemaphoreSlim cacheLock)
-    {
-        if (isAsync)
-        {
-            // Initiate the underlying async implementation
-            invocation.Proceed();
-            // Wrap the underlying task with a new task that will handle caching as well
-            var workTask = (Task<T>)invocation.ReturnValue!;
-            invocation.ReturnValue = Task.Run(async () =>
-            {
-                try
-                {
-                    // Wait for the underlying operation
-                    var result = await workTask;
-                    // Then save the result in cache
-                    SetResultInCache(invocation, cacheKey, result);
-                    return result;
-                }
-                finally
-                {
-                    cacheLock.Release();
-                }
-            });
-        }
-        else
-        {
-            try
-            {
-                // Call through to the underlying implementation
-                invocation.Proceed();
-                // Then save the result in cache
-                SetResultInCache(invocation, cacheKey, (T)invocation.ReturnValue!);
-            }
-            finally
-            {
-                cacheLock.Release();
-            }
-        }
+        return true;
     }
 
     private void SetResultInCache(IInvocation invocation, string cacheKey, T result)

@@ -39,8 +39,7 @@ internal sealed class LocalFileCacheManager : ICacheManager
         var files = await GetMatchingEntries(keyWildcardExpression);
         foreach (var file in files)
         {
-            // https://stackoverflow.com/questions/10606328/why-isnt-there-an-asynchronous-file-delete-in-net
-            file.Delete();
+            localFileCache.RemoveEntryFiles(file.FullName);
             ++count;
         }
         return count;

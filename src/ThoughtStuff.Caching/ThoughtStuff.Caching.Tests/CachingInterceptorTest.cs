@@ -1,6 +1,8 @@
 using Castle.DynamicProxy;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using ThoughtStuff.Caching.FileSystem;
 // Moq also has an IInvocation, so disambiguate:
 using Invocation = Castle.DynamicProxy.IInvocation;
 
@@ -152,6 +154,105 @@ public class CachingInterceptorTest
         var result2 = await service.AsyncOperation();
         result2.Should().Be(expected);
         service.Calls.Should().Be(1);
+    }
+
+    [Theory(DisplayName = "Caching: Treat eviction between probe and read as a miss"), CacheTest]
+    public void EvictionMiss(LocalFileCache fileCache)
+    {
+        const string key = "TestService.BlockingOperation()";
+        fileCache.SetString(key, "7");
+        var textCache = ForwardToFileCache(fileCache, key);
+        textCache.SetupSequence(c => c.Contains(key))
+                 .Returns(() =>
+                 {
+                     var found = fileCache.Contains(key);
+                     fileCache.Remove(key);
+                     return found;
+                 })
+                 .Returns(() => fileCache.Contains(key));
+        var service = MakeProxyService(new JsonTypedCache(textCache.Object));
+
+        service.BlockingOperation().Should().Be(42);
+        service.Calls.Should().Be(1);
+        fileCache.GetString(key).Should().Be("42");
+    }
+
+    [Theory(DisplayName = "Caching: Concurrent misses refill once after eviction during the locked probe"), CacheTest]
+    public async Task ConcurrentRefill(LocalFileCache fileCache)
+    {
+        const string key = "TestService.AsyncOperation()";
+        const int callerCount = 2;
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var firstProbes = new Barrier(callerCount);
+        var probeCount = 0;
+        var textCache = ForwardToFileCache(fileCache, key);
+        textCache.Setup(c => c.Contains(key)).Returns(() =>
+        {
+            var probe = Interlocked.Increment(ref probeCount);
+            if (probe <= callerCount)
+            {
+                var found = fileCache.Contains(key);
+                Assert.True(firstProbes.SignalAndWait(TimeSpan.FromSeconds(5), cancellationToken));
+                return found;
+            }
+
+            if (probe == callerCount + 1)
+            {
+                // Simulate a publication and eviction by another cache user during the locked probe.
+                fileCache.SetString(key, "7");
+                var found = fileCache.Contains(key);
+                fileCache.Remove(key);
+                return found;
+            }
+
+            return fileCache.Contains(key);
+        });
+        var service = MakeProxyService(new JsonTypedCache(textCache.Object));
+
+        var calls = Enumerable.Range(0, callerCount)
+                              .Select(_ => Task.Run(service.AsyncOperation, cancellationToken));
+        var results = await Task.WhenAll(calls).WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+
+        results.Should().Equal(42, 42);
+        service.Calls.Should().Be(1);
+        fileCache.GetString(key).Should().Be("42");
+    }
+
+    [Theory(DisplayName = "Caching: Report the cache location when JSON is invalid"), CacheTest]
+    public void InvalidJson(LocalFileCache fileCache)
+    {
+        const string key = "TestService.BlockingOperation()";
+        fileCache.SetString(key, "invalid JSON");
+        var service = MakeProxyService(new JsonTypedCache(fileCache));
+
+        var exception = Assert.Throws<Exception>(() => service.BlockingOperation());
+
+        exception.Message.Should().Contain(fileCache.GetLocation(key));
+        exception.InnerException.Should().BeAssignableTo<JsonException>();
+        service.Calls.Should().Be(0);
+    }
+
+    [Theory(DisplayName = "Caching: Reject a stored default value"), CacheTest]
+    public void StoredDefault(LocalFileCache fileCache)
+    {
+        const string key = "TestService.BlockingOperation()";
+        fileCache.SetString(key, "0");
+        var service = MakeProxyService(new JsonTypedCache(fileCache));
+
+        var exception = Assert.Throws<InvalidOperationException>(() => service.BlockingOperation());
+
+        exception.Message.Should().Contain("value was default");
+        service.Calls.Should().Be(0);
+    }
+
+    private static Mock<ITextCache> ForwardToFileCache(LocalFileCache fileCache, string key)
+    {
+        var textCache = new Mock<ITextCache>();
+        textCache.Setup(c => c.GetString(key)).Returns(() => fileCache.GetString(key));
+        textCache.Setup(c => c.SetString(key, It.IsAny<string>(), It.IsAny<DistributedCacheEntryOptions>()))
+                 .Callback((string key, string value, DistributedCacheEntryOptions options) =>
+                     fileCache.SetString(key, value, options));
+        return textCache;
     }
 
     [Theory(DisplayName = "Caching: Ignore Void Returning Invocations"), AutoMoq]

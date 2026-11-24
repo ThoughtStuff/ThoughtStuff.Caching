@@ -32,12 +32,13 @@ public class JsonTypedCache : ITypedCache
     public void Remove(string key) => textCache.Remove(key);
 
     /// <inheritdoc/>
-    public T? Get<T>(string key)
+    public T? Get<T>(string key) => TryGet<T>(key, out var value) ? value : default;
+
+    internal bool TryGet<T>(string key, out T? value)
     {
         var json = textCache.GetString(key);
-        if (json is null)
-            return default;
-        return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions);
+        value = json is null ? default : JsonSerializer.Deserialize<T>(json, JsonSerializerOptions);
+        return json is not null;
     }
 
     /// <inheritdoc/>
