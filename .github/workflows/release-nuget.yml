@@ -1,0 +1,116 @@
+name: Release to NuGet
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+env:
+  BUILD_CONFIGURATION: ${{ vars.BUILD_CONFIGURATION || 'Release' }}
+  DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '10.0.x' }}
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: src/ThoughtStuff.Caching
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@v6
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Pack libraries
+        run: |
+          for project in ThoughtStuff.Caching ThoughtStuff.Caching.Azure ThoughtStuff.Caching.FileSystem; do
+            dotnet pack "$project/$project.csproj" --configuration "$BUILD_CONFIGURATION" \
+              --output "$RUNNER_TEMP/nuget-packages"
+          done
+
+      - name: Validate release title against package versions
+        env:
+          RELEASE_TITLE: ${{ github.event.release.name }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          import sys
+          from pathlib import Path
+          from xml.etree import ElementTree
+          from zipfile import ZipFile
+
+          title = os.environ["RELEASE_TITLE"]
+          if not re.fullmatch(r"v[0-9]+(?:\.[0-9]+){3}", title):
+              sys.exit(f"Release title must be vX.X.X.X, got {title!r}.")
+
+          release_version = title[1:]
+          valid_versions = {release_version}
+          # NuGet omits a zero fourth component when packing.
+          if release_version.endswith(".0"):
+              valid_versions.add(release_version[:-2])
+
+          package_dir = Path(os.environ["RUNNER_TEMP"]) / "nuget-packages"
+          packages = sorted(package_dir.glob("*.nupkg"))
+          if len(packages) != 3:
+              sys.exit(f"Expected three NuGet packages, found {len(packages)}.")
+
+          for package in packages:
+              for artifact in (package, package.with_suffix(".snupkg")):
+                  with ZipFile(artifact) as archive:
+                      manifest = next(name for name in archive.namelist() if name.endswith(".nuspec"))
+                      version = ElementTree.fromstring(archive.read(manifest)).findtext("./{*}metadata/{*}version")
+                  if version not in valid_versions:
+                      sys.exit(f"{artifact.name} has version {version!r}, which does not match {title!r}.")
+                  print(f"Validated {artifact.name} against {title}.")
+          PY
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nuget-packages
+          path: ${{ runner.temp }}/nuget-packages
+          if-no-files-found: error
+          overwrite: true
+
+  publish:
+    needs: pack
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/setup-dotnet@v6
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: nuget-packages
+          path: nuget-packages
+
+      - name: Sign in to NuGet.org
+        id: nuget
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push packages and symbols to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ steps.nuget.outputs.NUGET_API_KEY }}
+        run: |
+          for package in nuget-packages/*.nupkg; do
+            dotnet nuget push "$package" --source https://api.nuget.org/v3/index.json \
+              --api-key "$NUGET_API_KEY" --symbol-api-key "$NUGET_API_KEY" --skip-duplicate
+          done
