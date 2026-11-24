@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Caching.Distributed;
 using static ThoughtStuff.Caching.CachingInternal;
 
 namespace ThoughtStuff.Caching;
@@ -8,14 +8,9 @@ namespace ThoughtStuff.Caching;
 /// <summary>
 /// Wraps a <see cref="ITextCache"/> and uses JSON to serialize objects into and out of the <see cref="ITextCache"/>.
 /// </summary>
-public class JsonTypedCache : ITypedCache
+public class JsonTypedCache(ITextCache textCache) : ITypedCache
 {
-    private readonly ITextCache textCache;
-
-    public JsonTypedCache(ITextCache textCache)
-    {
-        this.textCache = textCache ?? throw new ArgumentNullException(nameof(textCache));
-    }
+    private readonly ITextCache textCache = textCache ?? throw new ArgumentNullException(nameof(textCache));
 
     private JsonSerializerOptions JsonSerializerOptions => new()
     {

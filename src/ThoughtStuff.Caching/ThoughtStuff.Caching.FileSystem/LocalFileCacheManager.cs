@@ -2,14 +2,9 @@ using ThoughtStuff.Caching.Core;
 
 namespace ThoughtStuff.Caching.FileSystem;
 
-internal sealed class LocalFileCacheManager : ICacheManager
+internal sealed class LocalFileCacheManager(LocalFileCache localFileCache) : ICacheManager
 {
-    private readonly LocalFileCache localFileCache;
-
-    public LocalFileCacheManager(LocalFileCache localFileCache)
-    {
-        this.localFileCache = localFileCache;
-    }
+    private readonly LocalFileCache localFileCache = localFileCache;
 
     /// <inheritdoc/>
     public Task<int> GetCacheEntryCount()
