@@ -204,8 +204,8 @@ public class CachingInterceptorTest
     }
 
     [Theory(DisplayName = "Caching: Concurrent Sync: Avoids deadlock when underlying operation throws"), CacheTest]
-    public void ConcurrentSyncThrowing(int expected,
-                                       JsonTypedCache cache)
+    public async Task ConcurrentSyncThrowing(int expected,
+                                            JsonTypedCache cache)
     {
         const int count = 5;
         var service = MakeProxyService(cache);
@@ -225,14 +225,13 @@ public class CachingInterceptorTest
             {
             }
         });
-        var completedInTime = testTask.Wait(2000);
-        completedInTime.Should().BeTrue();
+        await testTask.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
         service.Calls.Should().Be(count);
     }
 
     [Theory(DisplayName = "Caching: Concurrent Async: Avoids deadlock when underlying operation throws"), CacheTest]
-    public void ConcurrentAsyncThrowing(int expected,
-                                       JsonTypedCache cache)
+    public async Task ConcurrentAsyncThrowing(int expected,
+                                             JsonTypedCache cache)
     {
         const int count = 5;
         var service = MakeProxyService(cache);
@@ -242,21 +241,14 @@ public class CachingInterceptorTest
         var calls = Enumerable.Range(0, count)
                               .Select(i => Task.Run(async () => results[i] = await service.ThrowingOperationAsync()))
                               .ToArray();
-        bool? completedInTime = null;
-        try
-        {
-            var testTask = Task.WhenAll(calls);
-            completedInTime = testTask.Wait(2000);
-        }
-        catch (AggregateException)
-        {
-        }
-        completedInTime.Should().NotBeFalse();
+        var exception = await Assert.ThrowsAsync<Exception>(() =>
+            Task.WhenAll(calls).WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken));
+        exception.Message.Should().Be("Expected exception");
         service.Calls.Should().Be(count);
     }
 
     [Theory(DisplayName = "Caching: Avoids deadlock when 2nd Contains check fails"), CacheTest]
-    public void SecondContainsFails(Mock<ITypedCache> cache)
+    public async Task SecondContainsFails(Mock<ITypedCache> cache)
     {
         const int count = 5;
         // This sequence makes it likely that the 2nd check for cache.Contains
@@ -292,7 +284,6 @@ public class CachingInterceptorTest
             }
         });
         // The exception should not cause a deadlock
-        var completedInTime = testTask.Wait(2000);
-        completedInTime.Should().BeTrue();
+        await testTask.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
     }
 }

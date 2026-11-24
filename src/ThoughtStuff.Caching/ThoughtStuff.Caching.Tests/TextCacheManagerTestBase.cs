@@ -29,7 +29,7 @@ public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCa
     }
 
     [Theory(DisplayName = "Caching Mgmt: Enumerate Keys"), CacheTest]
-    public void EnumeratingKeys(TCache cache)
+    public async Task EnumeratingKeys(TCache cache)
     {
         const int count = 7;
         var expected = Enumerable.Range(0, count)
@@ -40,7 +40,7 @@ public abstract class TextCacheManagerTestBase<TCache> where TCache : IManagedCa
         }
         var cacheManager = cache.GetCacheManager();
 
-        var keys = cacheManager.EnumerateKeys().ToEnumerable();
+        var keys = await cacheManager.EnumerateKeys().ToArrayAsync();
 
         keys.Should().BeEquivalentTo(expected);
     }

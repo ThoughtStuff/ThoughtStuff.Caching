@@ -117,9 +117,7 @@ public class BlobStorageService : IBlobStorageService
     {
         var container = await GetBlobContainerClient();
         var blobsPaged = container.GetBlobsAsync();
-        return await blobsPaged
-            .AsAsyncEnumerable()
-            .CountAsync();
+        return await blobsPaged.CountAsync();
     }
 
     /// <inheritdoc/>
@@ -184,12 +182,9 @@ public class BlobStorageService : IBlobStorageService
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var container = await GetBlobContainerClient();
-        var blobsPaged = container.GetBlobsAsync(prefix: prefix, cancellationToken: cancellationToken);
-        var names = blobsPaged.AsAsyncEnumerable()
-                              .Select(b => b.Name);
-        // Iterate so we don't need to return Task<IAsyncEnumerable>
-        await foreach (var name in names)
-            yield return name;
+        var blobsPaged = container.GetBlobsAsync(new GetBlobsOptions { Prefix = prefix }, cancellationToken);
+        await foreach (var blob in blobsPaged)
+            yield return blob.Name;
     }
 
     private async IAsyncEnumerable<string> EnumerateBlobsMatchingWildcards(string wildcardPattern,

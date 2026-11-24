@@ -1,7 +1,6 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using AutoFixture.Xunit2;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace ThoughtStuff.Caching.Tests;

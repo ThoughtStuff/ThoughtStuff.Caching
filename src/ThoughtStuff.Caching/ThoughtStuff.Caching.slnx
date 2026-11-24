@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/_BuildSettings/">
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Project Path="ThoughtStuff.Caching.Azure/ThoughtStuff.Caching.Azure.csproj" />
+  <Project Path="ThoughtStuff.Caching.Example/ThoughtStuff.Caching.Example.csproj" />
+  <Project Path="ThoughtStuff.Caching.FileSystem/ThoughtStuff.Caching.FileSystem.csproj" />
+  <Project Path="ThoughtStuff.Caching.Tests/ThoughtStuff.Caching.Tests.csproj" />
+  <Project Path="ThoughtStuff.Caching/ThoughtStuff.Caching.csproj" />
+</Solution>

@@ -2,6 +2,8 @@
 
 Injects look-through cache for configured services
 
+The core, Azure, and file-system packages target .NET Standard 2.0 and 2.1. For applications on modern .NET, the 2.x packages support .NET 8 and later. The example and test projects require the .NET 10 SDK.
+
 ## Quick Start
 
 ```cs

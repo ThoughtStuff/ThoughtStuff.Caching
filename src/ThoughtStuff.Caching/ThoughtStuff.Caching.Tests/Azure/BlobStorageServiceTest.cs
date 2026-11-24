@@ -1,7 +1,6 @@
 // Copyright (c) ThoughtStuff, LLC.
 // Licensed under the ThoughtStuff, LLC Split License.
 
-using AutoFixture.Xunit2;
 using Azure;
 using Azure.Storage.Blobs.Models;
 using System.Net;
@@ -217,10 +216,10 @@ public class BlobStorageServiceTest
         await subject.UploadString("gamma", string.Empty);
         await subject.UploadString("alphabet", string.Empty);
 
-        subject.EnumerateBlobs("al*").ToEnumerable().Should().HaveCount(3);
-        subject.EnumerateBlobs("alph*").ToEnumerable().Should().HaveCount(2);
-        subject.EnumerateBlobs("al?").ToEnumerable().Should().HaveCount(1);
-        subject.EnumerateBlobs("bal?").ToEnumerable().Should().HaveCount(0);
+        (await subject.EnumerateBlobs("al*").CountAsync()).Should().Be(3);
+        (await subject.EnumerateBlobs("alph*").CountAsync()).Should().Be(2);
+        (await subject.EnumerateBlobs("al?").CountAsync()).Should().Be(1);
+        (await subject.EnumerateBlobs("bal?").CountAsync()).Should().Be(0);
     }
 
     [Theory(DisplayName = "Blob: Enumerate w/ internal wildcards"), CacheTest]
@@ -233,14 +232,14 @@ public class BlobStorageServiceTest
         await subject.UploadString("per", string.Empty);
         await subject.UploadString("x", string.Empty);
 
-        subject.EnumerateBlobs("*per*").ToEnumerable().Should().HaveCount(5);
-        subject.EnumerateBlobs("super*").ToEnumerable().Should().HaveCount(3);
-        subject.EnumerateBlobs("?up*").ToEnumerable().Should().HaveCount(3);
-        subject.EnumerateBlobs("p?r").ToEnumerable().Should().HaveCount(1);
-        subject.EnumerateBlobs("p*r").ToEnumerable().Should().HaveCount(1);
-        subject.EnumerateBlobs("*up*er*").ToEnumerable().Should().HaveCount(4);
-        subject.EnumerateBlobs("s*b").ToEnumerable().Should().HaveCount(1);
-        subject.EnumerateBlobs("s?b").ToEnumerable().Should().HaveCount(0);
+        (await subject.EnumerateBlobs("*per*").CountAsync()).Should().Be(5);
+        (await subject.EnumerateBlobs("super*").CountAsync()).Should().Be(3);
+        (await subject.EnumerateBlobs("?up*").CountAsync()).Should().Be(3);
+        (await subject.EnumerateBlobs("p?r").CountAsync()).Should().Be(1);
+        (await subject.EnumerateBlobs("p*r").CountAsync()).Should().Be(1);
+        (await subject.EnumerateBlobs("*up*er*").CountAsync()).Should().Be(4);
+        (await subject.EnumerateBlobs("s*b").CountAsync()).Should().Be(1);
+        (await subject.EnumerateBlobs("s?b").CountAsync()).Should().Be(0);
     }
 
     [Theory(DisplayName = "Blob: Enumerate w/ Exact match"), CacheTest]
@@ -250,8 +249,8 @@ public class BlobStorageServiceTest
         await subject.UploadString(name, string.Empty);
         await subject.UploadString(random[1], string.Empty);
 
-        subject.EnumerateBlobs(name).ToEnumerable().Should().HaveCount(1);
-        subject.EnumerateBlobs("x").ToEnumerable().Should().HaveCount(0);
+        (await subject.EnumerateBlobs(name).CountAsync()).Should().Be(1);
+        (await subject.EnumerateBlobs("x").CountAsync()).Should().Be(0);
     }
 
     [Theory(DisplayName = "Blob: Enumerate w/ Cancellation", Skip = "Figure out why this doesn't work"), CacheTest]

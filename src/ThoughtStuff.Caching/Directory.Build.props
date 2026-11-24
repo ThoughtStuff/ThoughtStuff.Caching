@@ -1,6 +1,6 @@
 <Project>
-  <PropertyGroup>
-    <!-- So we have one C# version for the entire codebase -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
+    <!-- The portable libraries use C# 11 syntax. -->
     <LangVersion>11.0</LangVersion>
   </PropertyGroup>
 </Project>

@@ -21,7 +21,7 @@ public class MemoryCacheMangerTest
     }
 
     [Theory(DisplayName = "Caching Mgmt: Enumerate Keys"), MemCacheTest]
-    public void EnumeratingKeys(MemoryCacheTypedCache cache)
+    public async Task EnumeratingKeys(MemoryCacheTypedCache cache)
     {
         const int count = 7;
         var expected = Enumerable.Range(0, count)
@@ -32,7 +32,7 @@ public class MemoryCacheMangerTest
         }
         var cacheManager = cache.GetCacheManager();
 
-        var keys = cacheManager.EnumerateKeys().ToEnumerable();
+        var keys = await cacheManager.EnumerateKeys().ToArrayAsync();
 
         keys.Should().BeEquivalentTo(expected);
     }

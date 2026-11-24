@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <Version>1.2.0.0</Version>
+    <Version>2.0.0</Version>
     <Authors>jfoshee</Authors>
     <Company>ThoughtStuff, LLC</Company>
     <PackageProjectUrl>https://github.com/ThoughtStuff/ThoughtStuff.Caching</PackageProjectUrl>
@@ -19,13 +19,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Castle.Core" Version="5.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
-    <PackageReference Include="System.Text.Json" Version="6.0.7" />
+    <PackageReference Include="Castle.Core" Version="5.2.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.15" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" Version="10.0.15" />
+    <PackageReference Include="System.Text.Json" Version="10.0.15" />
   </ItemGroup>
 
   <ItemGroup>
