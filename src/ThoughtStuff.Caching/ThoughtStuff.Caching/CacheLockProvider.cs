@@ -29,7 +29,7 @@ public class CacheLockProvider : ICacheLockProvider
             {
                 entry.AbsoluteExpirationRelativeToNow = expiration;
                 return new SemaphoreSlim(1);
-            });
+            })!;
         }
     }
 

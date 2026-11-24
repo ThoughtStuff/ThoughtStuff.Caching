@@ -127,7 +127,7 @@ public class CachingInterceptorTest
         service.Calls.Should().Be(1);
 
         // Allow the task continuation to run which sets the cache value
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         cache.Verify(c => c.Set("TestService.AsyncOperation()", 42, It.IsAny<DistributedCacheEntryOptions>()));
     }
 
@@ -142,7 +142,7 @@ public class CachingInterceptorTest
         result.Should().Be(expected);
 
         // Allow the task continuation to run which sets the cache value
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         cache.Get<int>("TestService.AsyncOperation()").Should().Be(expected);
 
         // Change the value returned by the service
@@ -212,6 +212,7 @@ public class CachingInterceptorTest
         var calls = Enumerable.Range(0, count)
                               .Select(i => new Action(() => results[i] = service.ThrowingOperation()))
                               .ToArray();
+        var cancellationToken = TestContext.Current.CancellationToken;
         var testTask = Task.Run(() =>
         {
             try
@@ -221,8 +222,8 @@ public class CachingInterceptorTest
             catch (Exception)
             {
             }
-        });
-        await testTask.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
+        }, cancellationToken);
+        await testTask.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
         service.Calls.Should().Be(count);
     }
 
@@ -268,6 +269,7 @@ public class CachingInterceptorTest
         var calls = Enumerable.Range(0, count)
                               .Select(i => new Action(() => results[i] = service.BlockingOperation()))
                               .ToArray();
+        var cancellationToken = TestContext.Current.CancellationToken;
         var testTask = Task.Run(() =>
         {
             try
@@ -279,8 +281,8 @@ public class CachingInterceptorTest
                 // The exception should be propagated
                 aggregate.InnerExceptions.Should().AllBeOfType<InvalidOperationException>();
             }
-        });
+        }, cancellationToken);
         // The exception should not cause a deadlock
-        await testTask.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
+        await testTask.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
     }
 }

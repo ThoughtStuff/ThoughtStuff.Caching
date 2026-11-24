@@ -17,9 +17,10 @@ public class BlobStorageServiceTest
 
         var container = await subject.GetBlobContainerClient();
         var blobClient = container.GetBlobClient(blobName);
-        BlobDownloadInfo download = await blobClient.DownloadAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        BlobDownloadInfo download = await blobClient.DownloadAsync(cancellationToken);
         var streamReader = new StreamReader(download.Content);
-        var returnedContent = await streamReader.ReadToEndAsync();
+        var returnedContent = await streamReader.ReadToEndAsync(cancellationToken);
         returnedContent.Should().Be(content);
         blobUrl.Should().Be(blobClient.Uri);
     }
@@ -35,9 +36,10 @@ public class BlobStorageServiceTest
 
         var container = await subject.GetBlobContainerClient();
         var blobClient = container.GetBlobClient(blobName);
-        BlobDownloadInfo download = await blobClient.DownloadAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        BlobDownloadInfo download = await blobClient.DownloadAsync(cancellationToken);
         var streamReader = new StreamReader(download.Content);
-        var returnedContent = await streamReader.ReadToEndAsync();
+        var returnedContent = await streamReader.ReadToEndAsync(cancellationToken);
         returnedContent.Should().Be(content);
         blobUrl.Should().Be(blobClient.Uri);
     }
@@ -54,9 +56,10 @@ public class BlobStorageServiceTest
 
         var container = await subject.GetBlobContainerClient();
         var blobClient = container.GetBlobClient("path/to/file.txt");
-        BlobDownloadInfo download = await blobClient.DownloadAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        BlobDownloadInfo download = await blobClient.DownloadAsync(cancellationToken);
         var streamReader = new StreamReader(download.Content);
-        var returnedContent = await streamReader.ReadToEndAsync();
+        var returnedContent = await streamReader.ReadToEndAsync(cancellationToken);
         returnedContent.Should().Be(content);
         //blobUrl.Should().Be(blobClient.Uri);
         blobUrl.AbsolutePath.Should().EndWith("/path/to/file.txt");
@@ -168,7 +171,7 @@ public class BlobStorageServiceTest
         subject.DeleteBlocking(blobName);
 
         var blobClient = subject.GetBlobClientBlocking(blobName);
-        bool exists = blobClient.Exists();
+        bool exists = blobClient.Exists(TestContext.Current.CancellationToken);
         exists.Should().BeFalse();
     }
 
@@ -196,7 +199,7 @@ public class BlobStorageServiceTest
         }
 
         int expected = 0;
-        await foreach (var blobName in subject.EnumerateBlobs("*"))
+        await foreach (var blobName in subject.EnumerateBlobs("*", TestContext.Current.CancellationToken))
         {
             blobName.Should().Be(expected.ToString());
             ++expected;
@@ -213,10 +216,11 @@ public class BlobStorageServiceTest
         await subject.UploadString("gamma", string.Empty);
         await subject.UploadString("alphabet", string.Empty);
 
-        (await subject.EnumerateBlobs("al*").CountAsync()).Should().Be(3);
-        (await subject.EnumerateBlobs("alph*").CountAsync()).Should().Be(2);
-        (await subject.EnumerateBlobs("al?").CountAsync()).Should().Be(1);
-        (await subject.EnumerateBlobs("bal?").CountAsync()).Should().Be(0);
+        var cancellationToken = TestContext.Current.CancellationToken;
+        (await subject.EnumerateBlobs("al*", cancellationToken).CountAsync(cancellationToken)).Should().Be(3);
+        (await subject.EnumerateBlobs("alph*", cancellationToken).CountAsync(cancellationToken)).Should().Be(2);
+        (await subject.EnumerateBlobs("al?", cancellationToken).CountAsync(cancellationToken)).Should().Be(1);
+        (await subject.EnumerateBlobs("bal?", cancellationToken).CountAsync(cancellationToken)).Should().Be(0);
     }
 
     [Theory(DisplayName = "Blob: Enumerate w/ internal wildcards"), CacheTest]
@@ -229,14 +233,15 @@ public class BlobStorageServiceTest
         await subject.UploadString("per", string.Empty);
         await subject.UploadString("x", string.Empty);
 
-        (await subject.EnumerateBlobs("*per*").CountAsync()).Should().Be(5);
-        (await subject.EnumerateBlobs("super*").CountAsync()).Should().Be(3);
-        (await subject.EnumerateBlobs("?up*").CountAsync()).Should().Be(3);
-        (await subject.EnumerateBlobs("p?r").CountAsync()).Should().Be(1);
-        (await subject.EnumerateBlobs("p*r").CountAsync()).Should().Be(1);
-        (await subject.EnumerateBlobs("*up*er*").CountAsync()).Should().Be(4);
-        (await subject.EnumerateBlobs("s*b").CountAsync()).Should().Be(1);
-        (await subject.EnumerateBlobs("s?b").CountAsync()).Should().Be(0);
+        var cancellationToken = TestContext.Current.CancellationToken;
+        (await subject.EnumerateBlobs("*per*", cancellationToken).CountAsync(cancellationToken)).Should().Be(5);
+        (await subject.EnumerateBlobs("super*", cancellationToken).CountAsync(cancellationToken)).Should().Be(3);
+        (await subject.EnumerateBlobs("?up*", cancellationToken).CountAsync(cancellationToken)).Should().Be(3);
+        (await subject.EnumerateBlobs("p?r", cancellationToken).CountAsync(cancellationToken)).Should().Be(1);
+        (await subject.EnumerateBlobs("p*r", cancellationToken).CountAsync(cancellationToken)).Should().Be(1);
+        (await subject.EnumerateBlobs("*up*er*", cancellationToken).CountAsync(cancellationToken)).Should().Be(4);
+        (await subject.EnumerateBlobs("s*b", cancellationToken).CountAsync(cancellationToken)).Should().Be(1);
+        (await subject.EnumerateBlobs("s?b", cancellationToken).CountAsync(cancellationToken)).Should().Be(0);
     }
 
     [Theory(DisplayName = "Blob: Enumerate w/ Exact match"), CacheTest]
@@ -246,8 +251,9 @@ public class BlobStorageServiceTest
         await subject.UploadString(name, string.Empty);
         await subject.UploadString(random[1], string.Empty);
 
-        (await subject.EnumerateBlobs(name).CountAsync()).Should().Be(1);
-        (await subject.EnumerateBlobs("x").CountAsync()).Should().Be(0);
+        var cancellationToken = TestContext.Current.CancellationToken;
+        (await subject.EnumerateBlobs(name, cancellationToken).CountAsync(cancellationToken)).Should().Be(1);
+        (await subject.EnumerateBlobs("x", cancellationToken).CountAsync(cancellationToken)).Should().Be(0);
     }
 
     [Theory(DisplayName = "Blob: Enumerate w/ Cancellation", Skip = "Figure out why this doesn't work"), CacheTest]
@@ -260,8 +266,9 @@ public class BlobStorageServiceTest
         }
 
         int j = 0;
-        CancellationTokenSource tokenSource = new();
-        await foreach (var blobName in subject.EnumerateBlobs("*").WithCancellation(tokenSource.Token))
+        using var tokenSource = new CancellationTokenSource();
+        var blobs = subject.EnumerateBlobs("*", TestContext.Current.CancellationToken);
+        await foreach (var blobName in blobs.WithCancellation(tokenSource.Token))
         {
             ++j;
             if (j == 5)
@@ -288,11 +295,12 @@ public class BlobStorageServiceTest
 
         var container = await subject.GetBlobContainerClient();
         var blobClient = container.GetBlobClient(blobName);
-        BlobDownloadInfo download = await blobClient.DownloadAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        BlobDownloadInfo download = await blobClient.DownloadAsync(cancellationToken);
         var streamReader = new StreamReader(download.Content);
-        var returnedContent = await streamReader.ReadToEndAsync();
+        var returnedContent = await streamReader.ReadToEndAsync(cancellationToken);
         returnedContent.Should().Be(content);
-        BlobProperties properties = blobClient.GetProperties();
+        BlobProperties properties = blobClient.GetProperties(cancellationToken: cancellationToken);
         properties.Metadata.Should().BeEquivalentTo(
             new Dictionary<string, string>
             {
@@ -307,11 +315,12 @@ public class BlobStorageServiceTest
     {
         var container = await subject.GetBlobContainerClient();
         var blobClient = container.GetBlobClient(blobName);
-        blobClient.Upload(string.Empty.ToStream());
+        var cancellationToken = TestContext.Current.CancellationToken;
+        blobClient.Upload(string.Empty.ToStream(), cancellationToken: cancellationToken);
         await blobClient.SetMetadataAsync(new Dictionary<string, string>
         {
             ["Count"] = count.ToString()
-        });
+        }, cancellationToken: cancellationToken);
 
         var (modified, metadata) = subject.GetMetadataBlocking<ExampleMetadata>(blobName);
 
@@ -327,7 +336,7 @@ public class BlobStorageServiceTest
     {
         var container = await subject.GetBlobContainerClient();
         var blobClient = container.GetBlobClient(blobName);
-        blobClient.Upload(content.ToStream());
+        blobClient.Upload(content.ToStream(), cancellationToken: TestContext.Current.CancellationToken);
 
         var text = subject.GetTextBlocking(blobName);
 
@@ -368,13 +377,14 @@ public class BlobStorageServiceTest
         await subject.UploadString(blobName, content);
         var url = await subject.GetBlobUrl(blobName);
 
-        var before = await httpClient.GetAsync(url);
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var before = await httpClient.GetAsync(url, cancellationToken);
         // Azurite returns 403, but Storage Emulator returns 404
         before.StatusCode.Should().BeOneOf(HttpStatusCode.Forbidden, HttpStatusCode.NotFound);
 
         await subject.EnablePublicAccess();
 
-        var after = await httpClient.GetAsync(url);
+        var after = await httpClient.GetAsync(url, cancellationToken);
         after.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 

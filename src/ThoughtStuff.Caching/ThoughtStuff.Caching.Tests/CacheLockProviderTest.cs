@@ -51,7 +51,7 @@ public class CacheLockProviderTest
 
         // Act
         var lockObject1 = cacheLockProvider.GetCacheLockObject(key);
-        await Task.Delay(TimeSpan.FromSeconds(3)); // wait for lock to expire
+        await Task.Delay(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken); // wait for lock to expire
         var lockObject2 = cacheLockProvider.GetCacheLockObject(key);
 
         // Assert

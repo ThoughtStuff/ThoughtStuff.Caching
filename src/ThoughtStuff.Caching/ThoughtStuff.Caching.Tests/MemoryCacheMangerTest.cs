@@ -29,7 +29,8 @@ public class MemoryCacheMangerTest
         }
         var cacheManager = cache.GetCacheManager();
 
-        var keys = await cacheManager.EnumerateKeys().ToArrayAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var keys = await cacheManager.EnumerateKeys(cancellationToken).ToArrayAsync(cancellationToken);
 
         keys.Should().BeEquivalentTo(expected);
     }

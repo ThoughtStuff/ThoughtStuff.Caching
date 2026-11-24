@@ -13,7 +13,7 @@ public class ZipArchiveBlobStorageTest
         var directory = FileSystemUtilities.GetTemporaryDirectory();
         var fileName = "test.txt";
         var filePath = Path.Combine(directory, fileName);
-        await File.WriteAllTextAsync(filePath, content);
+        await File.WriteAllTextAsync(filePath, content, TestContext.Current.CancellationToken);
         var zipFilePath = Path.GetTempFileName();
         File.Delete(zipFilePath);
         ZipFile.CreateFromDirectory(directory, zipFilePath);
@@ -36,7 +36,7 @@ public class ZipArchiveBlobStorageTest
         foreach (var (fileName, content) in items)
         {
             var filePath = Path.Combine(directory, fileName);
-            await File.WriteAllTextAsync(filePath, content);
+            await File.WriteAllTextAsync(filePath, content, TestContext.Current.CancellationToken);
         }
         var zipFilePath = Path.GetTempFileName();
         File.Delete(zipFilePath);

@@ -22,7 +22,7 @@ public class MemoryCacheTypedCache : ITypedCache, IManagedCache
     public string GetLocation(string key) => key;
 
     /// <inheritdoc/>
-    public T Get<T>(string key) => memoryCache.Get<T>(key);
+    public T Get<T>(string key) => memoryCache.Get<T>(key)!;
 
     /// <inheritdoc/>
     public void Remove(string key) => memoryCache.Remove(key);

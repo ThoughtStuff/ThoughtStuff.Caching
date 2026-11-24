@@ -42,7 +42,8 @@ public class CachingInterceptor<T> : IInterceptor
             // TODO: Perhaps a better way is needed to add the caching interceptor for multiple return types per service?
         }
 
-        var cacheKey = methodCacheKeyGenerator.GetCacheKey(invocation.Method, invocation.Arguments);
+        // Castle's array may contain nulls, which the built-in key generator handles.
+        var cacheKey = methodCacheKeyGenerator.GetCacheKey(invocation.Method, (object[])invocation.Arguments);
         if (cache.Contains(cacheKey))
         {
             GetResultFromCache(invocation, isAsync, cacheKey);
@@ -103,16 +104,16 @@ public class CachingInterceptor<T> : IInterceptor
             // Initiate the underlying async implementation
             invocation.Proceed();
             // Wrap the underlying task with a new task that will handle caching as well
-            var workTask = (Task<T>)invocation.ReturnValue;
+            var workTask = (Task<T>)invocation.ReturnValue!;
             invocation.ReturnValue = Task.Run(async () =>
             {
                 try
                 {
                     // Wait for the underlying operation
-                    await workTask;
+                    var result = await workTask;
                     // Then save the result in cache
-                    SetResultInCache(invocation, cacheKey, workTask.Result);
-                    return workTask.Result;
+                    SetResultInCache(invocation, cacheKey, result);
+                    return result;
                 }
                 finally
                 {
@@ -127,7 +128,7 @@ public class CachingInterceptor<T> : IInterceptor
                 // Call through to the underlying implementation
                 invocation.Proceed();
                 // Then save the result in cache
-                SetResultInCache(invocation, cacheKey, (T)invocation.ReturnValue);
+                SetResultInCache(invocation, cacheKey, (T)invocation.ReturnValue!);
             }
             finally
             {
