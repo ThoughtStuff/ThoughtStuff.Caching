@@ -42,7 +42,7 @@ services.AddMethodCaching()
         .AddTransientWithCaching<IBookInfoService, BookInfoService, BookInfo>();
 ```
 
-The above will register a _caching proxy_ for `IBookInfoService` which will wrap `BookInfoService`. 
+The above will register a _caching proxy_ for `IBookInfoService` which will wrap `BookInfoService`.
 The first call to get info on a particular book will use `BookInfoService`,
 but subsequent calls to get info on the same book will return the cached result from the first call.
 
@@ -55,13 +55,38 @@ void Example([Inject] IBookInfoService bookInfoService)
 }
 ```
 
+## Filesystem cache capacity
+
+You can enable a best-effort size limit when registering the filesystem cache.
+
+```csharp
+services.AddLocalFileTextCache(options =>
+{
+    options.BaseDirectory = cacheDirectory;
+    options.SoftSizeLimitBytes = 512L * 1024 * 1024;
+});
+```
+
+The limit counts published payload and metadata bytes. On a write, the store
+tries to make room by evicting expired entries first, then the least recently
+used entries. A value can be returned to the caller without being cached.
+An existing directory can start over the limit and is trimmed on subsequent
+writes.
+
+When enabled the store tracks access times in a SQLite catalog.
+The catalog is built from existing files so the limit can be applied to an existing cache directory.
+
+Use one process per cache directory when limiting is enabled.
+Instances in that process share accounting and access tracking. The package
+logs a warning through .NET logging if it detects another process.
+
 ## Current Limitations
 
 ### Single Return Type per Interface
 
-Only one return type can be cached per service interface. 
-This works well for services that implement a Single Responsibility, but not for larger classes. 
-Often times simplified interface(s) can be created. 
+Only one return type can be cached per service interface.
+This works well for services that implement a Single Responsibility, but not for larger classes.
+Often times simplified interface(s) can be created.
 The simplified interfaces may only have 1 function each and all be implemented by the large class.
 
 ### Transient Lifetime
@@ -80,9 +105,9 @@ To make it amenable to method caching change it to `GetUserFavoriteColor(userId)
 
 ---
 
-> The programmer, like the poet, works only slightly removed from pure **thought-stuff**. 
-> He builds his castles in the air, from air, creating by exertion of the imagination. 
-> Few media of creation are so flexible, so easy to polish and rework, 
+> The programmer, like the poet, works only slightly removed from pure **thought-stuff**.
+> He builds his castles in the air, from air, creating by exertion of the imagination.
+> Few media of creation are so flexible, so easy to polish and rework,
 > so readily capable of realizing grand conceptual structures.
 
 &mdash; Fred P. Brooks

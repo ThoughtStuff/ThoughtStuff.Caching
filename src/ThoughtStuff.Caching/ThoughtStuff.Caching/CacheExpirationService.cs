@@ -36,20 +36,34 @@ public class CacheExpirationService : ICacheExpirationService
         }
         if (cacheEntryOptions.SlidingExpiration.HasValue)
             throw new NotImplementedException("Sliding Expiration cache policy is not implemented");
-        // Initialize expiration to "tomorrow" so selection of relative expiration simpler below
-        var expiration = now.AddDays(1);
-        var absolute = cacheEntryOptions.AbsoluteExpiration;
-        if (absolute.HasValue)
-            expiration = absolute.Value.LocalDateTime;
-        var relativeTimespan = cacheEntryOptions.AbsoluteExpirationRelativeToNow;
-        if (relativeTimespan.HasValue)
+        return now >= GetExpiration(cacheEntryOptions, updatedTime);
+    }
+
+    /// <summary>Returns a deadline suitable for indexing, or null when trim must evaluate the policy directly.</summary>
+    internal DateTimeOffset? GetExpirationHint(DistributedCacheEntryOptions? options, DateTimeOffset updatedTime)
+    {
+        if (IsNullOrEmpty(options))
         {
-            var relativeExpiration = updatedTime.Add(relativeTimespan.Value);
-            // Choose earlier expiration (relative vs absolute) if both provided
-            if (relativeExpiration < expiration)
-                expiration = relativeExpiration;
+            // A custom default policy could supply different options on the next call.
+            if (defaultCachePolicyService.GetType() != typeof(HardCodedDefaultCachePolicy))
+                return null;
+            options = defaultCachePolicyService.GetDefaultCacheEntryOptions();
         }
-        return now >= expiration;
+
+        return options.SlidingExpiration.HasValue ? null : GetExpiration(options, updatedTime);
+    }
+
+    private static DateTimeOffset? GetExpiration(DistributedCacheEntryOptions options, DateTimeOffset updatedTime)
+    {
+        DateTimeOffset? expiration = options.AbsoluteExpiration?.LocalDateTime;
+        if (options.AbsoluteExpirationRelativeToNow is { } interval)
+        {
+            var relativeExpiration = updatedTime.Add(interval);
+            if (expiration is null || relativeExpiration < expiration)
+                return relativeExpiration;
+        }
+
+        return expiration;
     }
 
     private static bool IsNullOrEmpty(
