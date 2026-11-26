@@ -16,6 +16,8 @@
 
 Bump the three NuGet package versions together based on the changes since the
 last published release, following [SemVer](https://semver.org/spec/v2.0.0.html).
+Use `MAJOR.MINOR.PATCH` in the package projects and `vMAJOR.MINOR.PATCH` for
+GitHub release titles and tags.
 
 ## Documentation and Comments
 
