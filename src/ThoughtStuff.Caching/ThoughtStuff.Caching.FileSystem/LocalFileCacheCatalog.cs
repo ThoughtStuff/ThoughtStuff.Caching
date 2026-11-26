@@ -45,7 +45,7 @@ internal sealed class LocalFileCacheCatalog(LocalFileCacheDirectory directorySta
 
     private readonly string directory = directoryState.DirectoryPath;
     private readonly string databasePath = Path.Combine(directoryState.DirectoryPath, FileName);
-    private readonly Dictionary<string, (string EntryVersion, long Timestamp)> pendingHits = new();
+    private readonly Dictionary<string, (string EntryVersion, long Timestamp)> pendingHits = [];
     private Timer? hitTimer;
 
     /// <summary>Whether to inventory files before using the catalog, including on first use.</summary>
@@ -144,12 +144,12 @@ internal sealed class LocalFileCacheCatalog(LocalFileCacheDirectory directorySta
         pendingHits.Remove(path);
     }
 
-    /// <summary>Returns a page for expiry checks or LRU eviction, excluding the incoming entry's path.</summary>
+    /// <summary>Returns a page for expiry checks or LRU eviction, optionally excluding an incoming entry.</summary>
     /// <remarks>
     /// Expiry hints can be absent, so the expiry pass returns rows with unknown deadlines too.
     /// The caller checks both the filesystem identity and the applicable expiry policy.
     /// </remarks>
-    internal List<CacheFileEntry> ReadCandidates(string except,
+    internal List<CacheFileEntry> ReadCandidates(string? except,
                                                 DateTimeOffset? expiredAt,
                                                 long offset,
                                                 int pageSize)
@@ -163,11 +163,11 @@ internal sealed class LocalFileCacheCatalog(LocalFileCacheDirectory directorySta
             : "COALESCE(last_used_at_utc, published_at_utc), payload_path";
         using var command = CreateCommand(connection, $"""
             SELECT {EntryColumns} FROM cache_entries
-            WHERE payload_path <> $except {expiryFilter}
+            WHERE ($except IS NULL OR payload_path <> $except) {expiryFilter}
             ORDER BY {orderBy}
             LIMIT $page_size OFFSET $offset
             """);
-        command.Parameters.AddWithValue("$except", except);
+        command.Parameters.AddWithValue("$except", (object?)except ?? DBNull.Value);
         command.Parameters.AddWithValue("$page_size", pageSize);
         command.Parameters.AddWithValue("$offset", offset);
         if (expiredAt.HasValue)

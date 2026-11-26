@@ -120,6 +120,21 @@ public sealed class LocalFileCacheCatalogTest : IDisposable
         }
     }
 
+    [Fact(DisplayName = "Filesystem catalog: A maintenance page includes the oldest entry when no path is excluded")]
+    public void MaintenancePage()
+    {
+        lock (directoryState.Gate)
+        {
+            var first = Entry("oldest.txt", publishedAtUtc: 100);
+            var second = Entry("newest.txt", publishedAtUtc: 200);
+            catalog.Reconcile([second, first]);
+
+            var page = catalog.ReadCandidates(except: null, expiredAt: null, offset: 0, pageSize: 1);
+
+            page.Select(entry => entry.Path).Should().Equal(first.Path);
+        }
+    }
+
     [Fact(DisplayName = "Filesystem catalog: Reconciliation preserves recorded recency for an unchanged version")]
     public void PreserveRecency()
     {

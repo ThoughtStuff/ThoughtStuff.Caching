@@ -3,6 +3,7 @@
 #pragma warning disable CS8603 // Possible null reference return.
 #endif
 
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
@@ -19,7 +20,7 @@ namespace ThoughtStuff.Caching.FileSystem;
 
 public class LocalFileCache : ITextCache, IManagedCache
 {
-    // Bound synchronous eviction work per write. A later write can continue trimming an oversized cache.
+    // Normal writes cap removals at one batch. Maintenance keeps reading batches until it reaches the limit.
     private const int TrimBatchSize = 32;
     private static readonly Random Random = new();
     private readonly IObjectFileSerializer objectFileSerializer;
@@ -185,6 +186,74 @@ public class LocalFileCache : ITextCache, IManagedCache
         }
     }
 
+    /// <summary>
+    /// Evicts expired entries first, then least recently used entries, until the combined size of
+    /// published payloads and their metadata is at or below the configured soft size limit.
+    /// </summary>
+    /// <param name="timeout">A positive time budget that includes waiting for the directory and scanning its entries.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <remarks>
+    /// Run during maintenance. This method holds the directory lock during inventory and eviction
+    /// and supports one process per directory. Timeout and cancellation are checked between units of
+    /// work. A synchronous filesystem or SQLite operation can finish after the deadline, and a started
+    /// eviction finishes updating the catalog before the next check. Completed evictions are retained
+    /// on timeout, cancellation, or a storage failure.
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">The timeout is non-positive or the configured size limit is negative.</exception>
+    /// <exception cref="InvalidOperationException">The cache directory has no configured size limit.</exception>
+    /// <exception cref="TimeoutException">The time budget expired before the trim completed.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <exception cref="IOException">An entry changed outside the directory lock during the trim or a filesystem operation failed.</exception>
+    public void TrimToSize(TimeSpan timeout, CancellationToken cancellationToken = default)
+    {
+        if (timeout <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(timeout));
+
+        var elapsed = Stopwatch.StartNew();
+        CheckMaintenanceDeadline();
+        var directory = directoryState.Value;
+        var entered = false;
+        try
+        {
+            // Monitor has no cancellable wait. Short, bounded waits let a caller stop while another
+            // cache instance holds the directory gate for a read, write, or maintenance run.
+            do
+            {
+                CheckMaintenanceDeadline();
+                var remainingMilliseconds = (timeout - elapsed.Elapsed).TotalMilliseconds;
+                Monitor.TryEnter(directory.Gate,
+                                 (int)Math.Max(0, Math.Min(50, remainingMilliseconds)),
+                                 ref entered);
+            } while (!entered);
+
+            CheckMaintenanceDeadline();
+            var catalog = GetCatalog(CheckMaintenanceDeadline) ??
+                          throw new InvalidOperationException(
+                              $"Trimming the cache requires {nameof(LocalFileCacheOptions.SoftSizeLimitBytes)}.");
+            var limit = options.Value.SoftSizeLimitBytes ?? directory.SoftSizeLimitBytes;
+            var reachedLimit = TryTrimToSize(catalog,
+                                            incomingPath: null,
+                                            maxExistingSizeBytes: limit,
+                                            removalsRemaining: null,
+                                            checkMaintenanceDeadline: CheckMaintenanceDeadline);
+            CheckMaintenanceDeadline();
+            if (!reachedLimit)
+                throw new IOException("The cache inventory changed during trimming. Run maintenance again with exclusive access to the cache directory.");
+        }
+        finally
+        {
+            if (entered)
+                Monitor.Exit(directory.Gate);
+        }
+
+        void CheckMaintenanceDeadline()
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (elapsed.Elapsed >= timeout)
+                throw new TimeoutException($"The filesystem cache trim did not complete within {timeout}.");
+        }
+    }
+
     /// <inheritdoc/>
     /// <remarks>Capacity accounting supports one process per directory.</remarks>
     public void Remove(string key) => RemoveEntryFiles(GetFilePath(key));
@@ -223,14 +292,14 @@ public class LocalFileCache : ITextCache, IManagedCache
             RemoveEntryFiles(valuePath, GetCatalog());
     }
 
-    private void RemoveEntryFiles(string valuePath, LocalFileCacheCatalog? catalog)
+    private void RemoveEntryFiles(string valuePath, LocalFileCacheCatalog? catalog, bool retry = true)
     {
         try
         {
             // Keep the catalog row until both files are gone. If any step fails, the next
             // inventory repairs accounting from what is actually on disk.
-            Delete(valuePath);
-            Delete(GetMetadataPath(valuePath));
+            Delete(valuePath, retry);
+            Delete(GetMetadataPath(valuePath), retry);
             catalog?.Remove(GetCatalogPath(valuePath));
         }
         catch
@@ -241,13 +310,22 @@ public class LocalFileCache : ITextCache, IManagedCache
         }
     }
 
-    private LocalFileCacheMetadata? ReadMetadata(string path) => File.Exists(path)
-        ? WithRetry(retryMissingFiles: false).Execute(() => objectFileSerializer.DeserializeFromFile<LocalFileCacheMetadata>(path))
-        : null;
+    private LocalFileCacheMetadata? ReadMetadata(string path, bool retry = true)
+    {
+        if (!File.Exists(path))
+            return null;
+
+        return retry ? WithRetry(retryMissingFiles: false).Execute(Deserialize) : Deserialize();
+
+        LocalFileCacheMetadata? Deserialize() => objectFileSerializer.DeserializeFromFile<LocalFileCacheMetadata>(path);
+    }
 
     /// <summary>Gets the directory's catalog and reconciles it if it has no trustworthy inventory.</summary>
-    /// <remarks>Requires the directory gate. A configured instance enables the catalog for the whole directory.</remarks>
-    private LocalFileCacheCatalog? GetCatalog()
+    /// <remarks>
+    /// Requires the directory gate. A configured instance enables the catalog for the whole directory.
+    /// Maintenance refreshes even a warm catalog so its size guarantee covers files changed before the run.
+    /// </remarks>
+    private LocalFileCacheCatalog? GetCatalog(Action? checkMaintenanceDeadline = null)
     {
         var directory = directoryState.Value;
         var limit = options.Value.SoftSizeLimitBytes;
@@ -267,10 +345,14 @@ public class LocalFileCache : ITextCache, IManagedCache
             directory.Catalog = catalog;
         }
 
-        if (catalog.NeedsReconciliation || !catalog.Exists)
+        if (checkMaintenanceDeadline is not null || catalog.NeedsReconciliation || !catalog.Exists)
         {
-            catalog.Reconcile(EnumerateEntries(directory.DirectoryPath));
-            LogInventory(directory.DirectoryPath, catalog);
+            checkMaintenanceDeadline?.Invoke();
+            // If a refresh fails, the previous SQLite transaction may have rolled back to a stale inventory.
+            catalog.NeedsReconciliation = true;
+            catalog.Reconcile(EnumerateEntries(directory.DirectoryPath, checkMaintenanceDeadline));
+            if (checkMaintenanceDeadline is null)
+                LogInventory(directory.DirectoryPath, catalog);
         }
 
         return catalog;
@@ -308,7 +390,7 @@ public class LocalFileCache : ITextCache, IManagedCache
             // Replacing the incoming path reclaims its previous bytes without evicting that entry.
             var maxExistingSizeBytes = limit - incomingSizeBytes;
             maxExistingSizeBytes += Math.Min(catalog.GetEntrySizeBytes(path), long.MaxValue - maxExistingSizeBytes);
-            if (!TryMakeRoom(catalog, path, maxExistingSizeBytes))
+            if (!TryTrimToSize(catalog, path, maxExistingSizeBytes, TrimBatchSize))
                 return;
 
             // File publication and its catalog update are separate. A failed update leaves disk
@@ -339,38 +421,59 @@ public class LocalFileCache : ITextCache, IManagedCache
         }
     }
 
-    /// <summary>Tries expiry and then LRU under the same removal budget so admission stays best effort.</summary>
-    private bool TryMakeRoom(LocalFileCacheCatalog catalog, string incomingPath, long maxExistingSizeBytes)
+    /// <summary>Tries expiry and then LRU with a shared removal budget, which is absent for maintenance.</summary>
+    private bool TryTrimToSize(LocalFileCacheCatalog catalog,
+                               string? incomingPath,
+                               long maxExistingSizeBytes,
+                               int? removalsRemaining,
+                               Action? checkMaintenanceDeadline = null)
     {
+        checkMaintenanceDeadline?.Invoke();
         if (catalog.TotalSizeBytes <= maxExistingSizeBytes)
             return true;
 
         // Flush pending hits into the indexed order before selecting candidates.
         catalog.FlushHits();
-        var removalsRemaining = TrimBatchSize;
-        if (Trim(catalog, incomingPath, maxExistingSizeBytes, DateTimeOffset.UtcNow, ref removalsRemaining))
+        if (Trim(catalog,
+                 incomingPath,
+                 maxExistingSizeBytes,
+                 DateTimeOffset.UtcNow,
+                 ref removalsRemaining,
+                 checkMaintenanceDeadline))
             return true;
 
-        return !catalog.NeedsReconciliation && Trim(catalog, incomingPath, maxExistingSizeBytes, null, ref removalsRemaining);
+        return !catalog.NeedsReconciliation &&
+               Trim(catalog,
+                    incomingPath,
+                    maxExistingSizeBytes,
+                    expiredAt: null,
+                    ref removalsRemaining,
+                    checkMaintenanceDeadline);
     }
 
+    /// <summary>Evicts a sorted page at a time, checking each publication before removing it.</summary>
     private bool Trim(LocalFileCacheCatalog catalog,
-                      string incomingPath,
+                      string? incomingPath,
                       long maxExistingSizeBytes,
                       DateTimeOffset? expiredAt,
-                      ref int removalsRemaining)
+                      ref int? removalsRemaining,
+                      Action? checkMaintenanceDeadline)
     {
+        // Maintenance surfaces file errors immediately. Ordinary retry delays could exceed its time budget.
+        var retryFileOperations = checkMaintenanceDeadline is null;
         long offset = 0;
-        while (catalog.TotalSizeBytes > maxExistingSizeBytes && removalsRemaining > 0)
+        while (catalog.TotalSizeBytes > maxExistingSizeBytes && removalsRemaining != 0)
         {
+            checkMaintenanceDeadline?.Invoke();
             var candidates = catalog.ReadCandidates(incomingPath, expiredAt, offset, TrimBatchSize);
             if (candidates.Count == 0)
                 break;
 
             foreach (var candidate in candidates)
             {
+                checkMaintenanceDeadline?.Invoke();
                 var path = Path.Combine(directoryState.Value.DirectoryPath, candidate.Path);
-                if (!TryInspectEntry(path, out var entry, out var metadata) ||
+                if (!TryInspectEntry(path, out var entry, out var metadata, retryFileOperations) ||
                     entry.EntryVersion != candidate.EntryVersion)
                 {
                     // A different publication is never deleted using a stale selection.
@@ -389,7 +492,9 @@ public class LocalFileCache : ITextCache, IManagedCache
                     continue;
                 }
 
-                RemoveEntryFiles(path, catalog);
+                // Once removal starts, finish the file pair and catalog update as one unit of work.
+                checkMaintenanceDeadline?.Invoke();
+                RemoveEntryFiles(path, catalog, retryFileOperations);
                 --removalsRemaining;
                 if (catalog.TotalSizeBytes <= maxExistingSizeBytes || removalsRemaining == 0)
                     break;
@@ -399,19 +504,24 @@ public class LocalFileCache : ITextCache, IManagedCache
         return catalog.TotalSizeBytes <= maxExistingSizeBytes;
     }
 
-    private IEnumerable<CacheFileEntry> EnumerateEntries(string directory)
+    /// <summary>Scans entries for inventory, checking the maintenance deadline even for skipped files.</summary>
+    private IEnumerable<CacheFileEntry> EnumerateEntries(string directory, Action? checkMaintenanceDeadline)
     {
+        var retryFileOperations = checkMaintenanceDeadline is null;
         foreach (var path in Directory.EnumerateFiles(directory, "*.txt"))
         {
-            if (TryInspectEntry(path, out var entry, out _))
+            checkMaintenanceDeadline?.Invoke();
+            if (TryInspectEntry(path, out var entry, out _, retryFileOperations))
                 yield return entry;
         }
+        checkMaintenanceDeadline?.Invoke();
     }
 
     /// <summary>Reads file stamps and expiry metadata for inventory or eviction without loading the payload.</summary>
     private bool TryInspectEntry(string path,
                                  out CacheFileEntry entry,
-                                 out LocalFileCacheMetadata? metadata)
+                                 out LocalFileCacheMetadata? metadata,
+                                 bool retry)
     {
         metadata = null;
         entry = null!;
@@ -423,7 +533,7 @@ public class LocalFileCache : ITextCache, IManagedCache
 
         try
         {
-            metadata = ReadMetadata(companion.FullName);
+            metadata = ReadMetadata(companion.FullName, retry);
         }
         catch (JsonException)
         {
@@ -508,7 +618,7 @@ public class LocalFileCache : ITextCache, IManagedCache
         // TODO: Ensure valid extension
         var fileName = key.Trim();
         // For some consistency across OSes, consider some characters invalid everywhere
-        var invalidChars = new HashSet<char> { '\\', ':' };
+        HashSet<char> invalidChars = ['\\', ':'];
         invalidChars.UnionWith(Path.GetInvalidFileNameChars());
         if (keepWildcards)
         {
@@ -538,10 +648,12 @@ public class LocalFileCache : ITextCache, IManagedCache
         return $"{fileName}.{extension}";
     }
 
-    private static void Delete(string valuePath)
+    private static void Delete(string valuePath, bool retry)
     {
-        WithRetry().Execute(() =>
-            File.Delete(valuePath));
+        if (retry)
+            WithRetry().Execute(() => File.Delete(valuePath));
+        else
+            File.Delete(valuePath);
     }
 
     private static bool IsMissingFile(IOException exception) =>

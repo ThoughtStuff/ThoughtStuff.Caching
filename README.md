@@ -73,6 +73,23 @@ used entries. A value can be returned to the caller without being cached.
 An existing directory can start over the limit and is trimmed on subsequent
 writes.
 
+During downtime, call `TrimToSize` to bring the cache to or below
+`SoftSizeLimitBytes`. It inventories the published files and holds the
+directory lock while evicting expired entries first, then the least recently
+used entries.
+
+```csharp
+var cache = (LocalFileCache)serviceProvider.GetRequiredService<ITextCache>();
+cache.TrimToSize(TimeSpan.FromMinutes(15), cancellationToken);
+```
+
+The timeout includes waiting for the lock and scanning the cache. The trim
+checks the time budget and cancellation between units of work, so an
+in-progress filesystem or SQLite operation can run past the deadline.
+Timeout throws `TimeoutException`, caller cancellation throws
+`OperationCanceledException`, and storage failures are surfaced immediately.
+Completed evictions remain in effect.
+
 When enabled the store tracks access times in a SQLite catalog.
 The catalog is built from existing files so the limit can be applied to an existing cache directory.
 

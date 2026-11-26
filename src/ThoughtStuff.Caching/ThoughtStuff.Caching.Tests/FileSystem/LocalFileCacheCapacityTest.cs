@@ -126,6 +126,19 @@ public sealed class LocalFileCacheCapacityTest : IDisposable
         File.Exists(cache.GetLocation("keep")).Should().BeTrue();
     }
 
+    [Fact(DisplayName = "Filesystem capacity: A normal write evicts at most one batch from an oversized cache")]
+    public void WriteBudget()
+    {
+        var cache = CreateCache();
+        for (var i = 0; i < 40; ++i)
+            File.WriteAllText(cache.GetLocation($"legacy-{i}"), Payload);
+
+        cache.SetString("new", Payload);
+
+        Directory.EnumerateFiles(directory, "*.txt").Should().HaveCount(8);
+        File.Exists(cache.GetLocation("new")).Should().BeFalse();
+    }
+
     [Fact(DisplayName = "Filesystem capacity: The method proxy returns a value that cannot be cached")]
     public void ProxyBypass()
     {

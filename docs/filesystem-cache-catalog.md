@@ -10,7 +10,7 @@ re-download metrics.
 | --- | --- |
 | Budget | Best-effort limit on published payload and metadata bytes. |
 | Overhead | Track staging, orphan files, and SQLite overhead separately. |
-| Timing | Trim at an opportune time. Admission is the initial trigger. |
+| Timing | Bounded trimming during admission and an explicit maintenance trim. |
 | Startup | Inventory existing entries. An oversized cache may open as-is. |
 | Capacity bypass | Return the computed value and skip caching when it cannot fit. |
 | Cache hit | Count a successful payload read even if decoding later fails. |
@@ -41,6 +41,11 @@ New public interface members
   ICacheManager  none
 ```
 
+`LocalFileCache.TrimToSize(TimeSpan timeout, CancellationToken cancellationToken = default)`
+uses the configured limit. It holds the directory gate through inventory and
+eviction and checks the time budget while waiting for the gate and between
+units of work. Timeout and cancellation throw, preserving completed evictions.
+
 ## Store operations
 
 ```text
@@ -70,6 +75,11 @@ SetString
   Generate a fresh EntryVersion token in the metadata companion for each write.
   Prefer expired entries, then order by last use or publication time.
   Consult buffered hits as well as the catalog before choosing a victim.
+
+TrimToSize
+  Refresh the inventory from published files and preserve recency for unchanged entries.
+  Use the admission eviction order with no limit on the number of removals.
+  Surface storage errors promptly and leave completed removals in effect.
 
 Remove / expiry / wildcard removal
   Use the shared file-pair removal path.

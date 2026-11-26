@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <Version>2.1.0</Version>
+    <Version>2.2.0</Version>
     <Authors>Jacob Foshee</Authors>
     <PackageProjectUrl>https://github.com/ThoughtStuff/ThoughtStuff.Caching</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ThoughtStuff/ThoughtStuff.Caching.git</RepositoryUrl>
